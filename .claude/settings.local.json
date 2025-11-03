@@ -117,7 +117,10 @@
       "Bash(gh auth:*)",
       "Bash(git rev-list:*)",
       "Bash(git remote set-url:*)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(Get-ChildItem -Path \"C:\\Users\\Stijn\\Coding\\Vereen\\components\" -Recurse -File)",
+      "Bash(Select-Object FullName, Length)",
+      "Bash(Start-Sleep -Seconds 10)"
     ],
     "deny": [],
     "ask": []

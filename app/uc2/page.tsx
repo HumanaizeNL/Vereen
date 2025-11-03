@@ -81,8 +81,11 @@ export default function UC2Page() {
   );
   const [selectedEvidence, setSelectedEvidence] = useState<Evidence | undefined>();
   const [isEvaluating, setIsEvaluating] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
   const [periodFrom, setPeriodFrom] = useState('2025-06-01');
   const [periodTo, setPeriodTo] = useState('2025-11-02');
+  const [exportAnonymize, setExportAnonymize] = useState(false);
+  const [exportIncludeEvidence, setExportIncludeEvidence] = useState(true);
 
   const handleUploadComplete = (files: string[]) => {
     setUploadedFiles((prev) => [...prev, ...files]);
@@ -113,6 +116,52 @@ export default function UC2Page() {
       alert('Er is een fout opgetreden bij het evalueren van de criteria');
     } finally {
       setIsEvaluating(false);
+    }
+  };
+
+  const handleExportDOCX = async () => {
+    setIsExporting(true);
+    try {
+      const response = await fetch('/api/uc2/export', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          client_id: clientId,
+          period: { from: periodFrom, to: periodTo },
+          criteria: criteria,
+          options: {
+            anonymize: exportAnonymize,
+            include_evidence_appendix: exportIncludeEvidence,
+            template: 'herindicatie_2026_v1',
+          },
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to export report');
+      }
+
+      // Download the file
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+
+      // Extract filename from Content-Disposition header or use default
+      const contentDisposition = response.headers.get('Content-Disposition');
+      const filenameMatch = contentDisposition?.match(/filename="(.+)"/);
+      const filename = filenameMatch ? filenameMatch[1] : `Herindicatie_${clientId}_${new Date().toISOString().split('T')[0]}.docx`;
+
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error('Error exporting report:', error);
+      alert('Er is een fout opgetreden bij het exporteren van het rapport');
+    } finally {
+      setIsExporting(false);
     }
   };
 
@@ -292,24 +341,50 @@ export default function UC2Page() {
                     </select>
                   </div>
                   <div>
-                    <label className="flex items-center gap-2">
-                      <input type="checkbox" />
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={exportAnonymize}
+                        onChange={(e) => setExportAnonymize(e.target.checked)}
+                        className="cursor-pointer"
+                      />
                       <span className="text-sm text-gray-700">
                         Anonimiseer NAW/BSN gegevens
                       </span>
                     </label>
                   </div>
                   <div>
-                    <label className="flex items-center gap-2">
-                      <input type="checkbox" defaultChecked />
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={exportIncludeEvidence}
+                        onChange={(e) => setExportIncludeEvidence(e.target.checked)}
+                        className="cursor-pointer"
+                      />
                       <span className="text-sm text-gray-700">
-                        Inclusief bronnenbijlage (XLSX)
+                        Inclusief bronnenbijlage
                       </span>
                     </label>
                   </div>
-                  <Button disabled={evaluatedCount === 0} className="w-full">
-                    Export naar DOCX
+                  <Button
+                    onClick={handleExportDOCX}
+                    disabled={evaluatedCount === 0 || isExporting}
+                    className="w-full"
+                  >
+                    {isExporting ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Exporteren...
+                      </>
+                    ) : (
+                      'Export naar DOCX'
+                    )}
                   </Button>
+                  {evaluatedCount === 0 && (
+                    <p className="text-sm text-yellow-600 text-center mt-2">
+                      Evalueer eerst criteria om te kunnen exporteren
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
