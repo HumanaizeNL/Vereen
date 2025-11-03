@@ -109,7 +109,15 @@
       "Bash(RESOURCE_ID=\"/subscriptions/6cd12b98-b50d-41ff-bb81-35aa3ac26596/resourceGroups/ChatHumanaize/providers/Microsoft.CognitiveServices/accounts/openai-vereen\")",
       "mcp__azure__extension_cli_generate",
       "Bash(git rev-parse:*)",
-      "Bash(git config:*)"
+      "Bash(git config:*)",
+      "Bash(git commit:*)",
+      "Bash(git remote add:*)",
+      "Bash(git branch:*)",
+      "mcp__github__create_repository",
+      "Bash(gh auth:*)",
+      "Bash(git rev-list:*)",
+      "Bash(git remote set-url:*)",
+      "WebSearch"
     ],
     "deny": [],
     "ask": []

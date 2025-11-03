@@ -22,8 +22,8 @@ export async function getOpenAIClient(): Promise<any> {
 
   try {
     // Dynamically import to avoid issues in SSR contexts
-    const { AzureOpenAI } = await import('@azure/openai');
-    const { DefaultAzureCredential } = await import('@azure/identity');
+    const { AzureOpenAI } = await import('openai');
+    const { DefaultAzureCredential, getBearerTokenProvider } = await import('@azure/identity');
 
     if (config.useEntraId) {
       // Use DefaultAzureCredential for Entra ID
@@ -33,23 +33,25 @@ export async function getOpenAIClient(): Promise<any> {
       // - Azure CLI credentials (local development)
       // - Visual Studio credentials
       console.log('✓ Initializing Azure OpenAI with Entra ID (DefaultAzureCredential)');
-      
+
+      const credential = new DefaultAzureCredential({
+        tenantId: process.env.AZURE_TENANT_ID,
+      });
+      const azureADTokenProvider = getBearerTokenProvider(credential, 'https://cognitiveservices.azure.com/.default');
+
       cachedClient = new AzureOpenAI({
         endpoint: config.endpoint,
-        credential: new DefaultAzureCredential({
-          tenantId: process.env.AZURE_TENANT_ID,
-        }),
+        azureADTokenProvider,
         apiVersion: config.apiVersion,
         deployment: config.deploymentName,
       });
     } else if (config.apiKey) {
       // Fallback to API Key authentication
-      const { AzureKeyCredential } = await import('@azure/openai');
       console.log('✓ Initializing Azure OpenAI with API Key');
-      
+
       cachedClient = new AzureOpenAI({
         endpoint: config.endpoint,
-        credential: new AzureKeyCredential(config.apiKey),
+        apiKey: config.apiKey,
         apiVersion: config.apiVersion,
         deployment: config.deploymentName,
       });

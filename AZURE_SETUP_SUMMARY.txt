@@ -86,7 +86,7 @@ Production (Azure hosted):
 ═══════════════════════════════════════════════════════════════════════════
 
 - .env.local contains credentials (NEVER commit to public repos)
-- Client secret: .x78Q~GRFlNcux9jnlmL6Fq7lRpKJYYWghbr6bor
+- Client secret: Stored securely in .env.local (excluded from git)
 - For production: Use Managed Identity instead of credentials
 - Rotate credentials regularly
 

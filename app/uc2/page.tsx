@@ -162,6 +162,7 @@ export default function UC2Page() {
                   value={periodFrom}
                   onChange={(e) => setPeriodFrom(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                  suppressHydrationWarning
                 />
               </div>
               <div>
@@ -171,6 +172,7 @@ export default function UC2Page() {
                   value={periodTo}
                   onChange={(e) => setPeriodTo(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                  suppressHydrationWarning
                 />
               </div>
             </div>
