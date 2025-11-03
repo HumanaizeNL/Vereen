@@ -1,0 +1,2 @@
+- Gebruik powershell commands, aangezien mijn terminal powershell is
+- Gebruik kill-port voor het stoppen van ports
