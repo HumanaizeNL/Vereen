@@ -7,6 +7,8 @@ import {
   getClientIncidents,
   addAuditEvent,
 } from '@/lib/data/stores';
+import { MOCK_MODE } from '@/lib/ai/client';
+import { analyzeClientTrendsWithAI } from '@/lib/ai/openai-client';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -41,7 +43,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get client data
-    const client = getClient(client_id);
+    const client = await getClient(client_id);
     if (!client) {
       return NextResponse.json(
         {
@@ -55,9 +57,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Get all client data
-    const notes = getClientNotes(client_id);
-    const measures = getClientMeasures(client_id);
-    const incidents = getClientIncidents(client_id);
+    const notes = await getClientNotes(client_id);
+    const measures = await getClientMeasures(client_id);
+    const incidents = await getClientIncidents(client_id);
 
     // Filter by period if specified
     const filteredNotes = period
@@ -92,30 +94,64 @@ export async function POST(request: NextRequest) {
       },
     };
 
-    // Analyze trends
-    if (include_trends && filteredMeasures.length > 0) {
-      analysis.trends = analyzeTrends(filteredMeasures);
+    // Try AI-powered analysis first
+    if (!MOCK_MODE && filteredNotes.length > 0) {
+      try {
+        const aiAnalysis = await analyzeClientTrendsWithAI({
+          clientName: client.name,
+          notes: filteredNotes.map((n) => ({ date: n.date, section: n.section, text: n.text })),
+          measures: filteredMeasures.map((m) => ({ date: m.date, type: m.type, score: String(m.score) })),
+          incidents: filteredIncidents.map((i) => ({ date: i.date, type: i.type, severity: i.severity, description: i.description })),
+        });
+
+        analysis.ai_analysis = {
+          summary: aiAnalysis.summary,
+          trends: aiAnalysis.trends,
+          recommendation: aiAnalysis.recommendation,
+          complexity_level: aiAnalysis.complexity,
+        };
+
+        // Still generate the heuristic analysis for comparison
+        if (include_trends && filteredMeasures.length > 0) {
+          analysis.trends_heuristic = analyzeTrends(filteredMeasures);
+        }
+
+        if (include_patterns) {
+          analysis.patterns_heuristic = analyzePatterns(filteredNotes, filteredIncidents);
+        }
+      } catch (error) {
+        console.error('AI analysis failed, using heuristics:', error);
+        // Fall through to heuristic analysis
+      }
     }
 
-    // Analyze patterns
-    if (include_patterns) {
-      analysis.patterns = analyzePatterns(filteredNotes, filteredIncidents);
+    // Fallback to or supplement with heuristic analysis
+    if (!analysis.ai_analysis) {
+      // Analyze trends
+      if (include_trends && filteredMeasures.length > 0) {
+        analysis.trends = analyzeTrends(filteredMeasures);
+      }
+
+      // Analyze patterns
+      if (include_patterns) {
+        analysis.patterns = analyzePatterns(filteredNotes, filteredIncidents);
+      }
+
+      // Generate care complexity assessment
+      analysis.complexity_assessment = assessCareComplexity(
+        filteredNotes,
+        filteredMeasures,
+        filteredIncidents
+      );
+
+      // Generate herindicatie recommendation
+      analysis.herindicatie_recommendation = generateRecommendation(
+        client,
+        analysis.trends,
+        analysis.patterns,
+        analysis.complexity_assessment
+      );
     }
-
-    // Generate care complexity assessment
-    analysis.complexity_assessment = assessCareComplexity(
-      filteredNotes,
-      filteredMeasures,
-      filteredIncidents
-    );
-
-    // Generate herindicatie recommendation
-    analysis.herindicatie_recommendation = generateRecommendation(
-      client,
-      analysis.trends,
-      analysis.patterns,
-      analysis.complexity_assessment
-    );
 
     // Add audit event
     addAuditEvent({

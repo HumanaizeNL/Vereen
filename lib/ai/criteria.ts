@@ -3,6 +3,7 @@
 import { searchClient } from '../search/flexsearch';
 import { CriterionResult } from '../schemas/responses';
 import { MOCK_MODE } from './client';
+import { evaluateCriterionWithAI } from './openai-client';
 
 // VV8 2026 criteria definitions
 export const VV8_CRITERIA_2026 = [
@@ -61,36 +62,55 @@ export async function evaluateCriterion(
     return evaluateCriterionMock(criterion, max_evidence);
   }
 
-  // Real Azure OpenAI implementation would go here
-  // For now, we'll use a simplified search-based approach
-
-  // Search for relevant evidence
+  // Search for relevant evidence using FlexSearch
   const searchQuery = generateSearchQuery(criterion);
   const hits = searchClient(client_id, searchQuery, max_evidence, {
     date_from: period.from,
     date_to: period.to,
   });
 
-  // For MVP: simple heuristic-based evaluation
   const evidence = hits.map((hit) => ({
     source: hit.source,
     row: hit.row,
     snippet: hit.snippet,
   }));
 
-  const status = determineStatus(criterion.id, hits);
-  const argument = generateArgument(criterion, hits);
-  const confidence = calculateConfidence(hits);
+  // Use AI to evaluate the criterion based on evidence
+  try {
+    const aiEvaluation = await evaluateCriterionWithAI({
+      criterion,
+      evidence,
+      clientContext: `Client ID: ${client_id}, Period: ${period.from} to ${period.to}`,
+    });
 
-  return {
-    id: criterion.id,
-    status,
-    argument,
-    evidence,
-    confidence,
-    uncertainty:
-      evidence.length === 0 ? 'Geen evidence gevonden in de periode' : undefined,
-  };
+    return {
+      id: criterion.id,
+      status: aiEvaluation.status,
+      argument: aiEvaluation.argument,
+      evidence,
+      confidence: aiEvaluation.confidence,
+      uncertainty:
+        evidence.length === 0 ? 'Geen evidence gevonden in de periode' : undefined,
+    };
+  } catch (error) {
+    console.error('AI evaluation failed, falling back to heuristics:', error);
+
+    // Fallback to heuristic-based evaluation if AI fails
+    const status = determineStatus(criterion.id, hits);
+    const argument = generateArgument(criterion, hits);
+    const confidence = calculateConfidence(hits);
+
+    return {
+      id: criterion.id,
+      status,
+      argument,
+      evidence,
+      confidence,
+      uncertainty: evidence.length === 0
+        ? 'Geen evidence gevonden in de periode'
+        : 'AI-evaluatie niet beschikbaar, heuristiek gebruikt',
+    };
+  }
 }
 
 function generateSearchQuery(criterion: { id: string; label: string }): string {

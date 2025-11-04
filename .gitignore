@@ -12,6 +12,7 @@ dist
 dist-ssr
 .next
 *.local
+.env
 .env.local
 
 # Editor directories and files
@@ -27,3 +28,8 @@ dist-ssr
 
 # OS files
 Thumbs.db
+
+/src/generated/prisma
+*.db
+*.db-journal
+prisma/dev.db

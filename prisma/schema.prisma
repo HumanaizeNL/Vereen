@@ -1,0 +1,117 @@
+// Prisma schema for Vereen healthcare application
+// Replaces in-memory stores with persistent database
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Client entity - Healthcare client information
+model Client {
+  id            String   @id @default(cuid()) @map("client_id")
+  name          String
+  dob           String
+  bsnEncrypted  String?  @map("bsn_encrypted")
+  wlzProfile    String   @map("wlz_profile")
+  provider      String
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  // Relations
+  notes         Note[]
+  measures      Measure[]
+  incidents     Incident[]
+  evidenceLinks EvidenceLink[]
+  auditEvents   AuditEvent[]
+
+  @@map("clients")
+}
+
+// Note entity - Healthcare notes and observations
+model Note {
+  id        String   @id @default(cuid())
+  clientId  String   @map("client_id")
+  date      String
+  author    String
+  section   String
+  text      String
+
+  // Relations
+  client    Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@index([clientId])
+  @@map("notes")
+}
+
+// Measure entity - Healthcare measurements and assessments
+model Measure {
+  id        String   @id @default(cuid())
+  clientId  String   @map("client_id")
+  date      String
+  type      String   // e.g., 'Katz-ADL', 'GAF', 'NPI', 'MMSE'
+  score     String
+  comment   String?
+
+  // Relations
+  client    Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@index([clientId])
+  @@index([type])
+  @@map("measures")
+}
+
+// Incident entity - Healthcare incidents and events
+model Incident {
+  id          String   @id @default(cuid())
+  clientId    String   @map("client_id")
+  date        String
+  type        String
+  severity    String
+  description String
+
+  // Relations
+  client      Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@index([clientId])
+  @@index([severity])
+  @@map("incidents")
+}
+
+// EvidenceLink entity - Links evidence to criteria evaluations
+model EvidenceLink {
+  id         String   @id @default(cuid())
+  clientId   String   @map("client_id")
+  targetPath String   @map("target_path") // e.g., 'uc2.criteria.ADL'
+  source     String   // e.g., 'notes.csv#201'
+  snippet    String
+  createdBy  String   @map("created_by")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  // Relations
+  client     Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@index([clientId])
+  @@index([targetPath])
+  @@map("evidence_links")
+}
+
+// AuditEvent entity - Audit trail for all actions
+model AuditEvent {
+  id        String   @id @default(cuid())
+  ts        DateTime @default(now())
+  actor     String   // 'ai' | 'user@email.com'
+  clientId  String   @map("client_id")
+  action    String
+  meta      String   // JSON string
+
+  // Relations
+  client    Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@index([clientId])
+  @@index([actor])
+  @@index([ts])
+  @@map("audit_events")
+}

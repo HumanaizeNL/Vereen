@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { nanoid } from 'nanoid';
 import { ComposeReportRequestSchema } from '@/lib/schemas/requests';
-import { addAuditEvent } from '@/lib/data/stores';
+import { addAuditEvent, getClient } from '@/lib/data/stores';
 import { MOCK_MODE } from '@/lib/ai/client';
+import { generateReportSection } from '@/lib/ai/openai-client';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -28,16 +29,27 @@ export async function POST(request: NextRequest) {
 
     const { client_id, criteria_payload, sections, tone } = validated.data;
 
+    // Get client info for context
+    const client = await getClient(client_id);
+
     // Compose report sections
     const composedSections: Record<string, string> = {};
     const citations: Array<{ section: string; ref: string }> = [];
 
     if (sections.includes('aanleiding')) {
-      composedSections.aanleiding = composeAanleiding(client_id, criteria_payload);
+      composedSections.aanleiding = await composeAanleiding(
+        client_id,
+        criteria_payload,
+        client
+      );
     }
 
     if (sections.includes('ontwikkelingen')) {
-      composedSections.ontwikkelingen = composeOntwikkelingen(criteria_payload, citations);
+      composedSections.ontwikkelingen = await composeOntwikkelingen(
+        criteria_payload,
+        citations,
+        client
+      );
     }
 
     if (sections.includes('criteria')) {
@@ -45,7 +57,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (sections.includes('conclusie')) {
-      composedSections.conclusie = composeConclusie(criteria_payload);
+      composedSections.conclusie = await composeConclusie(criteria_payload, client);
     }
 
     // Add audit event
@@ -81,14 +93,36 @@ export async function POST(request: NextRequest) {
   }
 }
 
-function composeAanleiding(client_id: string, criteria: any[]): string {
-  return `Dit advies betreft de herindicatie voor cliënt ${client_id}. Op basis van recente ontwikkelingen in de zorgbehoefte is een heroverweging van de huidige indicatie geïndiceerd.`;
+async function composeAanleiding(
+  client_id: string,
+  criteria: any[],
+  client: any
+): Promise<string> {
+  if (MOCK_MODE || !client) {
+    return `Dit advies betreft de herindicatie voor cliënt ${client_id}. Op basis van recente ontwikkelingen in de zorgbehoefte is een heroverweging van de huidige indicatie geïndiceerd.`;
+  }
+
+  try {
+    const aiGenerated = await generateReportSection({
+      sectionType: 'aanleiding',
+      context: {
+        clientName: client.name,
+        wlzProfile: client.wlz_profile,
+        period: { from: 'recent', to: 'heden' },
+      },
+    });
+    return aiGenerated;
+  } catch (error) {
+    console.error('AI generation failed for aanleiding, using template:', error);
+    return `Dit advies betreft de herindicatie voor ${client.name || client_id}. Op basis van recente ontwikkelingen in de zorgbehoefte is een heroverweging van de huidige indicatie geïndiceerd.`;
+  }
 }
 
-function composeOntwikkelingen(
+async function composeOntwikkelingen(
   criteria: any[],
-  citations: Array<{ section: string; ref: string }>
-): string {
+  citations: Array<{ section: string; ref: string }>,
+  client: any
+): Promise<string> {
   const changedCriteria = criteria.filter(
     (c) => c.status === 'verslechterd' || c.status === 'toegenomen_behoefte'
   );
@@ -97,15 +131,39 @@ function composeOntwikkelingen(
     return 'Er zijn geen significante veranderingen waargenomen in de zorgbehoefte.';
   }
 
-  const developments = changedCriteria
-    .map((c, idx) => {
-      const ref = `${c.id}_ev${idx}`;
-      citations.push({ section: 'ontwikkelingen', ref });
-      return `- ${c.id}: ${c.argument}`;
-    })
-    .join('\n');
+  // Add citations
+  changedCriteria.forEach((c, idx) => {
+    const ref = `${c.id}_ev${idx}`;
+    citations.push({ section: 'ontwikkelingen', ref });
+  });
 
-  return `In de afgelopen periode zijn de volgende ontwikkelingen waargenomen:\n\n${developments}`;
+  if (MOCK_MODE || !client) {
+    const developments = changedCriteria
+      .map((c) => `- ${c.id}: ${c.argument}`)
+      .join('\n');
+    return `In de afgelopen periode zijn de volgende ontwikkelingen waargenomen:\n\n${developments}`;
+  }
+
+  try {
+    const aiGenerated = await generateReportSection({
+      sectionType: 'ontwikkelingen',
+      context: {
+        clientName: client.name,
+        changedCriteria: changedCriteria.map((c) => ({
+          label: c.id,
+          status: c.status,
+          argument: c.argument,
+        })),
+      },
+    });
+    return aiGenerated;
+  } catch (error) {
+    console.error('AI generation failed for ontwikkelingen, using template:', error);
+    const developments = changedCriteria
+      .map((c) => `- ${c.id}: ${c.argument}`)
+      .join('\n');
+    return `In de afgelopen periode zijn de volgende ontwikkelingen waargenomen:\n\n${developments}`;
+  }
 }
 
 function composeCriteria(
@@ -129,16 +187,41 @@ function composeCriteria(
   return `# Criteria-evaluatie\n\n${criteriaText}`;
 }
 
-function composeConclusie(criteria: any[]): string {
+async function composeConclusie(criteria: any[], client: any): Promise<string> {
   const needsUpdate = criteria.filter(
     (c) => c.status === 'verslechterd' || c.status === 'toegenomen_behoefte'
   );
 
-  if (needsUpdate.length >= 3) {
-    return `Op basis van de criteria-evaluatie wordt geadviseerd om over te gaan tot herindicatie naar een zwaarder zorgprofiel. Er zijn ${needsUpdate.length} criteria waarop een verhoogde zorgbehoefte is vastgesteld.`;
-  } else if (needsUpdate.length > 0) {
-    return `Er zijn ${needsUpdate.length} criteria waarop veranderingen zijn vastgesteld. Overweeg aanpassing van de zorg binnen het huidige profiel of herindicatie indien de zorglast significant is toegenomen.`;
+  if (MOCK_MODE || !client) {
+    if (needsUpdate.length >= 3) {
+      return `Op basis van de criteria-evaluatie wordt geadviseerd om over te gaan tot herindicatie naar een zwaarder zorgprofiel. Er zijn ${needsUpdate.length} criteria waarop een verhoogde zorgbehoefte is vastgesteld.`;
+    } else if (needsUpdate.length > 0) {
+      return `Er zijn ${needsUpdate.length} criteria waarop veranderingen zijn vastgesteld. Overweeg aanpassing van de zorg binnen het huidige profiel of herindicatie indien de zorglast significant is toegenomen.`;
+    }
+    return 'De huidige zorgbehoefte lijkt stabiel. Geen directe herindicatie noodzakelijk op dit moment.';
   }
 
-  return 'De huidige zorgbehoefte lijkt stabiel. Geen directe herindicatie noodzakelijk op dit moment.';
+  try {
+    const aiGenerated = await generateReportSection({
+      sectionType: 'conclusie',
+      context: {
+        clientName: client.name,
+        wlzProfile: client.wlz_profile,
+        changedCriteria: needsUpdate.map((c) => ({
+          label: c.id,
+          status: c.status,
+          argument: c.argument,
+        })),
+      },
+    });
+    return aiGenerated;
+  } catch (error) {
+    console.error('AI generation failed for conclusie, using template:', error);
+    if (needsUpdate.length >= 3) {
+      return `Op basis van de criteria-evaluatie wordt geadviseerd om over te gaan tot herindicatie naar een zwaarder zorgprofiel. Er zijn ${needsUpdate.length} criteria waarop een verhoogde zorgbehoefte is vastgesteld.`;
+    } else if (needsUpdate.length > 0) {
+      return `Er zijn ${needsUpdate.length} criteria waarop veranderingen zijn vastgesteld. Overweeg aanpassing van de zorg binnen het huidige profiel of herindicatie indien de zorglast significant is toegenomen.`;
+    }
+    return 'De huidige zorgbehoefte lijkt stabiel. Geen directe herindicatie noodzakelijk op dit moment.';
+  }
 }
