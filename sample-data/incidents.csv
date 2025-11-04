@@ -1,5 +1,6 @@
-datum,type,ernst,beschrijving
-2025-09-18,Valpartij,Hoog,"Val in badkamer om 03:30 uur tijdens nachtelijk dwalen. Kleine hoofdwond, behandeld door verpleegkundige."
-2025-10-12,Valpartij,Middel,"Val bij toiletgang overdag. Geen letsel, wel schrik en onzekerheid bij cliënt."
-2025-10-01,Agressie,Middel,"Verbale en lichte fysieke agressie tijdens ochtendverzorging. Medewerker moest verzorging afbreken."
-2025-10-25,Dwaalgedrag,Laag,"Cliënt aangetroffen in gang om 02:00 uur, gedesoriënteerd en angstig."
+date,type,severity,description
+2024-01-15,Valincident,Matig,Gevallen in badkamer tijdens verzorging. Geen letsel maar wel geschrokken
+2024-01-18,Gedragsprobleem,Hoog,Agressief gedrag tijdens verzorging. Beet naar zorgmedewerker
+2024-01-20,Medicatiefout,Laag,Verkeerde tijdstip medicatie toediening. Direct hersteld
+2024-01-25,Dwalen,Matig,Aangetroffen in gang van andere afdeling. Gedesoriënteerd
+2024-02-05,Gedragsprobleem,Hoog,Continue alarmering gehele dag. Onrust op afdeling

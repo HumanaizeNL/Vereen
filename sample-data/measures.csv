@@ -1,7 +1,8 @@
-datum,type,score,opmerking
-2025-06-15,Katz ADL,3,"Matig afhankelijk bij ADL"
-2025-08-20,Katz ADL,4,"Lichte achteruitgang waargenomen"
-2025-10-05,Katz ADL,5,"Significante verslechtering, bijna volledig afhankelijk"
-2025-09-10,Mobiliteit,6,"Rollator nodig, valrisico aanwezig"
-2025-10-15,Cognitie,4,"Geheugen en oriëntatie afgenomen"
-2025-10-20,Gedrag,7,"Toename in onrust en agressie"
+date,type,score,comment
+2024-01-15,Katz-ADL,D,Afhankelijk bij wassen en aankleden
+2024-01-15,MMSE,22,Lichte cognitieve achteruitgang
+2024-01-16,NPI,35,Verhoogde scores op angst en agitatie
+2024-01-17,GAF,50,Ernstige beperking in sociaal functioneren
+2024-02-15,Katz-ADL,E,Verslechtering naar volledig afhankelijk
+2024-02-15,MMSE,19,Matige cognitieve achteruitgang
+2024-02-16,NPI,42,Verdere toename gedragsproblemen

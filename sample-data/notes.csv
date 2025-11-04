@@ -1,13 +1,11 @@
-datum,auteur,sectie,tekst
-2025-09-15,Maria de Jong,Observaties,"Cliënt heeft hulp nodig bij wassen en aankleden. ADL-afhankelijkheid neemt toe."
-2025-09-18,Peter Bakker,Incidenten,"Valpartij in de badkamer om 03:30 uur. Cliënt was 's nachts alleen aan het dwalen."
-2025-09-22,Maria de Jong,Observaties,"Nachtelijke onrust blijft aanhouden. Cliënt roept vaak om hulp tijdens de nacht."
-2025-09-25,Anna Visser,Zorgplan,"Nachtzorg uitgebreid naar 6 uur per nacht vanwege valgevaar en dwaalgedrag."
-2025-10-01,Peter Bakker,Observaties,"Cliënt toont meer gedragsproblematiek: regelmatig agressief bij verzorging."
-2025-10-05,Maria de Jong,Metingen,"Katz ADL-score gemeten: 5 van 6. Significante verslechtering t.o.v. vorige meting (3/6)."
-2025-10-10,Anna Visser,Observaties,"Communicatie wordt moeilijker. Cliënt begrijpt instructies niet altijd meer."
-2025-10-12,Peter Bakker,Incidenten,"Opnieuw valpartij bij toiletgang. Mobiliteit achteruitgegaan, rollator wordt niet altijd gebruikt."
-2025-10-18,Maria de Jong,Psychosociaal,"Cliënt lijkt somberder en trekt zich terug van sociale activiteiten."
-2025-10-22,Anna Visser,Observaties,"Zelfstandigheid in dagelijkse activiteiten neemt af. Cliënt heeft nu bij bijna alles ondersteuning nodig."
-2025-10-28,Peter Bakker,Zorgplan,"Overleg met familie over toename zorgbehoefte. Herindicatie lijkt noodzakelijk."
-2025-11-01,Maria de Jong,Observaties,"Nachtzorg essentieel geworden. Cliënt kan niet meer veilig alleen gelaten worden 's nachts."
+date,author,section,text
+2024-01-15,Verpleegkundige,ADL,Cliënt heeft volledige ondersteuning nodig bij persoonlijke verzorging en toiletgang
+2024-01-16,Psycholoog,Psyche,Toont angstgevoelens tijdens groepsactiviteiten. Heeft behoefte aan individuele aandacht
+2024-01-17,Fysiotherapeut,Mobiliteit,Valrisico is toegenomen. Gebruik van rollator geadviseerd. Transfer met tillift
+2024-01-18,Zorgmedewerker,Gedrag,Dwangmatig gedrag waargenomen. Herhaalt dezelfde vragen meerdere keren
+2024-01-19,Verpleegkundige,Medicatie,Start met Citalopram 10mg voor angstklachten na overleg met psychiater
+2024-01-20,Sociaal werker,Sociaal,Familie bezoekt regelmatig. Goede band met dochter die wettelijk vertegenwoordiger is
+2024-01-22,Ergotherapeut,Dagbesteding,Weigert groepsactiviteiten. Heeft moeite met dynamiek en te veel prikkels
+2024-01-23,Verpleegkundige,Nacht,Nachtelijke onrust. Alarmeert 3x per nacht. Dwaalgedrag in gang waargenomen
+2024-01-24,Psycholoog,Evaluatie,GAF score 50. Persoonlijkheidsstoornis lijkt aan de hand. Omgangsadvies aangepast
+2024-01-25,Zorgmedewerker,Welzijn,Belgedrag verminderd van 1x per 5 minuten naar 1x per 2 uur dankzij meerzorg inzet

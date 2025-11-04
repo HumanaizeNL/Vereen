@@ -1,2 +1,4 @@
-client_id,naam,geboortedatum,wlz_profile,aanbieder
-C123,Jan Jansen,1945-03-15,VV6,Zorggroep Noord
+client_id,name,dob,wlz_profile,provider
+CL-2024-TEST-001,Mevrouw Jansen,1950-05-15,VV7,Zorgcentrum Noord
+CL-2024-TEST-002,Meneer De Vries,1945-12-20,VV8,Berkumstede
+CL-2024-TEST-003,Mevrouw Peters,1955-03-08,VV6,Driezorg
