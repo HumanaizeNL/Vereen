@@ -116,7 +116,7 @@ export function FileUpload({
   const uploadAll = async () => {
     const uploadPromises = files
       .filter((f) => f.status === 'pending')
-      .map((f, i) => uploadFile(f, files.indexOf(f)));
+      .map((f, _i) => uploadFile(f, files.indexOf(f)));
 
     await Promise.all(uploadPromises);
 

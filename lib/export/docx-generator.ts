@@ -5,12 +5,6 @@ import {
   TextRun,
   HeadingLevel,
   AlignmentType,
-  Table,
-  TableCell,
-  TableRow,
-  WidthType,
-  BorderStyle,
-  convertInchesToTwip,
 } from 'docx';
 
 interface Evidence {
@@ -309,8 +303,12 @@ function generateCriteriaSection(criteria: Criterion[]): Paragraph[] {
     if (criterion.argument) {
       paragraphs.push(
         new Paragraph({
-          text: 'Onderbouwing:',
-          bold: true,
+          children: [
+            new TextRun({
+              text: 'Onderbouwing:',
+              bold: true,
+            }),
+          ],
           spacing: { before: 150, after: 100 },
         }),
         new Paragraph({

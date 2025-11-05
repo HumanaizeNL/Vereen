@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
     const filename = `Herindicatie_${clientLabel}_${timestamp}.docx`;
 
     // Return the DOCX file
-    return new NextResponse(docxBuffer, {
+    return new NextResponse(new Uint8Array(docxBuffer), {
       status: 200,
       headers: {
         'Content-Type':

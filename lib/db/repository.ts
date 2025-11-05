@@ -114,7 +114,6 @@ export async function addNotes(notes: Note[]): Promise<void> {
       section: note.section,
       text: note.text,
     })),
-    skipDuplicates: true,
   });
 }
 
@@ -161,7 +160,6 @@ export async function addMeasures(measures: Measure[]): Promise<void> {
       score: String(measure.score),
       comment: measure.comment,
     })),
-    skipDuplicates: true,
   });
 }
 
@@ -208,7 +206,6 @@ export async function addIncidents(incidents: Incident[]): Promise<void> {
       severity: incident.severity,
       description: incident.description,
     })),
-    skipDuplicates: true,
   });
 }
 
@@ -334,6 +331,13 @@ export async function getAuditLogs(filters: {
 // ===============================================
 // UTILITY OPERATIONS
 // ===============================================
+
+export async function deleteClient(client_id: string): Promise<void> {
+  // Prisma will cascade delete all related records due to onDelete: Cascade in schema
+  await prisma.client.delete({
+    where: { id: client_id },
+  });
+}
 
 export async function clearAllData(): Promise<void> {
   // Delete in order to respect foreign key constraints

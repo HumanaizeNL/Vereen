@@ -43,7 +43,7 @@ export function initializeClientIndex(client_id: string): void {
   documentStore.set(client_id, new Map());
 }
 
-export function indexClientData(client_id: string): void {
+export async function indexClientData(client_id: string): Promise<void> {
   initializeClientIndex(client_id);
 
   const index = searchIndexes.get(client_id)!;
@@ -53,7 +53,7 @@ export function indexClientData(client_id: string): void {
   docs.clear();
 
   // Index notes
-  const notes = getClientNotes(client_id);
+  const notes = await getClientNotes(client_id);
   notes.forEach((note, idx) => {
     const doc: SearchDocument = {
       id: note.id,
@@ -70,7 +70,7 @@ export function indexClientData(client_id: string): void {
   });
 
   // Index measures
-  const measures = getClientMeasures(client_id);
+  const measures = await getClientMeasures(client_id);
   measures.forEach((measure, idx) => {
     const text = `${measure.type}: ${measure.score}${
       measure.comment ? ' - ' + measure.comment : ''
@@ -88,7 +88,7 @@ export function indexClientData(client_id: string): void {
   });
 
   // Index incidents
-  const incidents = getClientIncidents(client_id);
+  const incidents = await getClientIncidents(client_id);
   incidents.forEach((incident, idx) => {
     const text = `${incident.type} (${incident.severity}): ${incident.description}`;
     const doc: SearchDocument = {

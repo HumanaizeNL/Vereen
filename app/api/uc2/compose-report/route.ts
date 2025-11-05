@@ -171,7 +171,7 @@ function composeCriteria(
   citations: Array<{ section: string; ref: string }>
 ): string {
   const criteriaText = criteria
-    .map((c, idx) => {
+    .map((c, _idx) => {
       const evidenceRefs = c.evidence
         .map((e: any, eidx: number) => {
           const ref = `${c.id}_${eidx}`;

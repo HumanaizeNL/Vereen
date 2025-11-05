@@ -22,10 +22,10 @@ export async function GET(request: NextRequest) {
 
     if (client_id) {
       // Stats for specific client
-      return getClientStats(client_id);
+      return await getClientStats(client_id);
     } else {
       // Global stats
-      return getGlobalStats();
+      return await getGlobalStats();
     }
   } catch (error) {
     console.error('Stats error:', error);
@@ -41,8 +41,8 @@ export async function GET(request: NextRequest) {
   }
 }
 
-function getGlobalStats() {
-  const clients = getAllClients();
+async function getGlobalStats() {
+  const clients = await getAllClients();
 
   let totalNotes = 0;
   let totalMeasures = 0;
@@ -51,10 +51,14 @@ function getGlobalStats() {
   const profileCounts: Record<string, number> = {};
   const providerCounts: Record<string, number> = {};
 
-  clients.forEach((client) => {
-    totalNotes += getClientNotes(client.client_id).length;
-    totalMeasures += getClientMeasures(client.client_id).length;
-    totalIncidents += getClientIncidents(client.client_id).length;
+  for (const client of clients) {
+    const notes = await getClientNotes(client.client_id);
+    const measures = await getClientMeasures(client.client_id);
+    const incidents = await getClientIncidents(client.client_id);
+
+    totalNotes += notes.length;
+    totalMeasures += measures.length;
+    totalIncidents += incidents.length;
 
     if (client.wlz_profile) {
       profileCounts[client.wlz_profile] =
@@ -65,7 +69,7 @@ function getGlobalStats() {
       providerCounts[client.provider] =
         (providerCounts[client.provider] || 0) + 1;
     }
-  });
+  }
 
   return NextResponse.json({
     summary: {
@@ -88,10 +92,10 @@ function getGlobalStats() {
   });
 }
 
-function getClientStats(client_id: string) {
-  const notes = getClientNotes(client_id);
-  const measures = getClientMeasures(client_id);
-  const incidents = getClientIncidents(client_id);
+async function getClientStats(client_id: string) {
+  const notes = await getClientNotes(client_id);
+  const measures = await getClientMeasures(client_id);
+  const incidents = await getClientIncidents(client_id);
 
   // Analyze notes
   const sectionCounts: Record<string, number> = {};

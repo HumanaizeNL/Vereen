@@ -94,7 +94,7 @@ const statusConfig: Record<
 };
 
 export function CriteriaCard({
-  id,
+  id: _id,
   label,
   description,
   status,

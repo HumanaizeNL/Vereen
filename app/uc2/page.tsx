@@ -74,7 +74,7 @@ const VV8_CRITERIA_2026 = [
 
 export default function UC2Page() {
   const [activeTab, setActiveTab] = useState<'criteria' | 'preview'>('criteria');
-  const [clientId, setClientId] = useState<string>('C123');
+  const [clientId, _setClientId] = useState<string>('C123');
   const [uploadedFiles, setUploadedFiles] = useState<string[]>([]);
   const [criteria, setCriteria] = useState<Criterion[]>(
     VV8_CRITERIA_2026.map((c) => ({ ...c, status: 'unknown' as const, evidence: [] }))

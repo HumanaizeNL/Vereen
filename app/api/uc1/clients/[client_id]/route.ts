@@ -3,14 +3,11 @@ import { nanoid } from 'nanoid';
 import {
   getClient,
   setClient,
+  deleteClient,
   getClientNotes,
   getClientMeasures,
   getClientIncidents,
   addAuditEvent,
-  clientsStore,
-  notesStore,
-  measuresStore,
-  incidentsStore,
 } from '@/lib/data/stores';
 import { clearClientIndex } from '@/lib/search/flexsearch';
 
@@ -50,9 +47,9 @@ export async function GET(request: NextRequest, props: RouteParams) {
     const response: any = { client };
 
     if (include_summary) {
-      const notes = getClientNotes(client_id);
-      const measures = getClientMeasures(client_id);
-      const incidents = getClientIncidents(client_id);
+      const notes = await getClientNotes(client_id);
+      const measures = await getClientMeasures(client_id);
+      const incidents = await getClientIncidents(client_id);
 
       response.summary = {
         notes_count: notes.length,
@@ -89,7 +86,7 @@ export async function PUT(request: NextRequest, props: RouteParams) {
     const { client_id } = params;
     const body = await request.json();
 
-    const existing = getClient(client_id);
+    const existing = await getClient(client_id);
     if (!existing) {
       return NextResponse.json(
         {
@@ -110,10 +107,10 @@ export async function PUT(request: NextRequest, props: RouteParams) {
       created_at: existing.created_at, // Keep original creation date
     };
 
-    setClient(updated);
+    await setClient(updated);
 
     // Add audit event
-    addAuditEvent({
+    await addAuditEvent({
       id: nanoid(),
       ts: new Date().toISOString(),
       actor: 'user',
@@ -149,7 +146,7 @@ export async function DELETE(request: NextRequest, props: RouteParams) {
   try {
     const { client_id } = params;
 
-    const client = getClient(client_id);
+    const client = await getClient(client_id);
     if (!client) {
       return NextResponse.json(
         {
@@ -162,24 +159,19 @@ export async function DELETE(request: NextRequest, props: RouteParams) {
       );
     }
 
-    // Count associated data before deletion
-    const notes = getClientNotes(client_id);
-    const measures = getClientMeasures(client_id);
-    const incidents = getClientIncidents(client_id);
+    // Count associated data before deletion (for audit log)
+    const notes = await getClientNotes(client_id);
+    const measures = await getClientMeasures(client_id);
+    const incidents = await getClientIncidents(client_id);
 
-    // Delete client
-    clientsStore.delete(client_id);
-
-    // Delete all associated data
-    notes.forEach((note) => notesStore.delete(note.id));
-    measures.forEach((measure) => measuresStore.delete(measure.id));
-    incidents.forEach((incident) => incidentsStore.delete(incident.id));
+    // Delete client (Prisma will cascade delete all related data)
+    await deleteClient(client_id);
 
     // Clear search index
     clearClientIndex(client_id);
 
     // Add audit event
-    addAuditEvent({
+    await addAuditEvent({
       id: nanoid(),
       ts: new Date().toISOString(),
       actor: 'user',

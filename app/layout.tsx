@@ -1,9 +1,10 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import { NavigationHeader } from '@/components/navigation-header';
 
 export const metadata: Metadata = {
-  title: 'Vereen - Meerzorg & Herindicatie',
-  description: 'AI-powered Meerzorg and Herindicatie documentation platform',
+  title: 'Vereen - Data Management & Herindicatie',
+  description: 'AI-powered data management and herindicatie platform for WLZ care',
 };
 
 export default function RootLayout({
@@ -14,6 +15,7 @@ export default function RootLayout({
   return (
     <html lang="nl">
       <body className="antialiased">
+        <NavigationHeader />
         {children}
       </body>
     </html>

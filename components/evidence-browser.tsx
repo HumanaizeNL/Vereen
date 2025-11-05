@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { Search, FileText, Calendar, TrendingUp } from 'lucide-react';
-import { Card, CardHeader, CardTitle, CardContent } from './ui/card';
+import { Card, CardContent } from './ui/card';
 import { Badge } from './ui/badge';
 
 interface Evidence {

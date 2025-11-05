@@ -9,23 +9,25 @@ export default function HomePage() {
             Vereen Platform
           </h1>
           <p className="text-xl text-gray-600 mb-8">
-            AI-gedreven documentatie voor Meerzorg en Herindicatie
+            AI-gedreven data management en herindicatie voor WLZ zorg
           </p>
         </div>
 
         <div className="grid md:grid-cols-2 gap-6">
-          <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
-            <h2 className="text-2xl font-semibold text-gray-900 mb-3">
-              UC1: Meerzorg
-            </h2>
-            <p className="text-gray-600 mb-4">
-              Genereer Meerzorg-aanvragen met AI-ondersteuning voor field mapping,
-              validatie en evidence linking.
-            </p>
-            <div className="mt-4 p-4 bg-gray-100 rounded text-sm text-gray-500">
-              Coming soon...
+          <Link href="/uc1">
+            <div className="bg-green-50 p-6 rounded-lg shadow-md border-2 border-green-300 hover:border-green-500 transition-colors cursor-pointer">
+              <h2 className="text-2xl font-semibold text-green-900 mb-3">
+                UC1: Data Management →
+              </h2>
+              <p className="text-green-700 mb-4">
+                Upload en beheer cliëntgegevens, CSV/PDF/DOCX bestanden, en bekijk
+                uitgebreide statistieken en analyses.
+              </p>
+              <div className="mt-4 text-green-600 font-medium">
+                ✓ Actief - Klik om te starten
+              </div>
             </div>
-          </div>
+          </Link>
 
           <Link href="/uc2">
             <div className="bg-blue-50 p-6 rounded-lg shadow-md border-2 border-blue-300 hover:border-blue-500 transition-colors cursor-pointer">

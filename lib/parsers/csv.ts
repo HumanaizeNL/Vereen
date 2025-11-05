@@ -85,7 +85,7 @@ export async function parseCSV(
             );
           }
 
-          let parsedData: ParsedCSVData = {};
+          const parsedData: ParsedCSVData = {};
 
           switch (detectedType) {
             case 'notes':

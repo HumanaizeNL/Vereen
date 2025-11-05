@@ -5,6 +5,7 @@ export {
   getClient,
   setClient,
   getAllClients,
+  deleteClient,
   getClientNotes,
   addNote,
   addNotes,

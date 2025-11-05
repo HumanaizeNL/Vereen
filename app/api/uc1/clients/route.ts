@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
     const provider = searchParams.get('provider');
     const wlz_profile = searchParams.get('wlz_profile');
 
-    let clients = getAllClients();
+    let clients = await getAllClients();
 
     // Apply filters
     if (provider) {
@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if client already exists
-    const existing = getClient(client_id);
+    const existing = await getClient(client_id);
     if (existing) {
       return NextResponse.json(
         {
@@ -102,10 +102,10 @@ export async function POST(request: NextRequest) {
       created_at: new Date().toISOString(),
     };
 
-    setClient(client);
+    await setClient(client);
 
     // Add audit event
-    addAuditEvent({
+    await addAuditEvent({
       id: nanoid(),
       ts: new Date().toISOString(),
       actor: 'user',

@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     const { client_id, period, criteria_set, max_evidence } = validated.data;
 
     // Get criteria definitions
-    let criteria = VV8_CRITERIA_2026;
+    const criteria = VV8_CRITERIA_2026;
 
     if (criteria_set === 'herindicatie.vv7.2026') {
       // VV7 would have slightly different criteria
