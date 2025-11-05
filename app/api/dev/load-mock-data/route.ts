@@ -4,9 +4,11 @@ import {
   addNotes,
   addMeasures,
   addIncidents,
+  addEvidence,
+  addAuditEvent,
   clearAllData,
 } from '@/lib/data/stores';
-import { loadMockData } from '@/lib/data/mock-data';
+import { loadMockData } from '@/lib/data/mock-data-enhanced';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,30 +20,50 @@ export const dynamic = 'force-dynamic';
  */
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
+    // Parse request body, default to empty object if no body provided
+    let body: { clear_existing?: boolean } = {};
+    try {
+      body = await request.json();
+    } catch {
+      // No body provided, use defaults
+    }
     const { clear_existing = true } = body;
 
     // Clear existing data if requested
     if (clear_existing) {
-      clearAllData();
+      await clearAllData();
     }
 
     // Load mock data
     const mockData = loadMockData();
 
-    // Load clients
-    mockData.clients.forEach((client) => {
-      setClient(client);
-    });
+    // Load clients - await each async operation
+    for (const client of mockData.clients) {
+      await setClient(client);
+    }
 
     // Load notes
-    addNotes(mockData.notes);
+    await addNotes(mockData.notes);
 
     // Load measures
-    addMeasures(mockData.measures);
+    await addMeasures(mockData.measures);
 
     // Load incidents
-    addIncidents(mockData.incidents);
+    await addIncidents(mockData.incidents);
+
+    // Load evidence links
+    if (mockData.evidenceLinks) {
+      for (const evidence of mockData.evidenceLinks) {
+        await addEvidence(evidence);
+      }
+    }
+
+    // Load audit events
+    if (mockData.auditEvents) {
+      for (const event of mockData.auditEvents) {
+        await addAuditEvent(event);
+      }
+    }
 
     return NextResponse.json({
       success: true,
@@ -50,9 +72,11 @@ export async function POST(request: NextRequest) {
         notes: mockData.notes.length,
         measures: mockData.measures.length,
         incidents: mockData.incidents.length,
+        evidenceLinks: mockData.evidenceLinks?.length || 0,
+        auditEvents: mockData.auditEvents?.length || 0,
       },
       client_ids: mockData.clients.map((c) => c.client_id),
-      message: 'Mock data loaded successfully',
+      message: 'Enhanced mock data loaded successfully',
     });
   } catch (error) {
     console.error('Load mock data error:', error);
@@ -87,9 +111,20 @@ export async function GET() {
         notes_count: mockData.notes.length,
         measures_count: mockData.measures.length,
         incidents_count: mockData.incidents.length,
+        evidence_links_count: mockData.evidenceLinks?.length || 0,
+        audit_events_count: mockData.auditEvents?.length || 0,
       },
       description:
-        'Realistic mock data based on casus 3 (psychiatric problems, anxiety) and casus 4 (cognitive decline after CVA)',
+        'Enhanced mock data with 7 diverse client scenarios (VV2-VV9), evidence links, and audit trail',
+      scenarios: [
+        'CL-2023-001: VV7 Psychiatric/Anxiety (meerzorg justified)',
+        'CL-2023-002: VV7 Post-CVA Cognitive Decline (meerzorg justified)',
+        'CL-2024-003: VV2 Physical Disability (stable, no meerzorg)',
+        'CL-2024-004: VV5 Early Dementia + Caregiver Burnout (respite care)',
+        'CL-2024-005: VV9 Severe ID + Autism (24/7 safety critical)',
+        'CL-2024-006: VV7 Stabilized (recommend phase-out)',
+        'CL-2024-007: VV6 Aggressive Behavior (medication trial)',
+      ],
     });
   } catch (error) {
     console.error('Get mock data info error:', error);

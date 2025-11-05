@@ -5,6 +5,7 @@ import { FileUpload } from '@/components/ui/file-upload';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
+import { Explainer, AISummaryCard } from '@/components/ui/explainer';
 import {
   Loader2,
   Download,
@@ -15,7 +16,9 @@ import {
   Search,
   Edit,
   Eye,
-  BarChart3
+  BarChart3,
+  Sparkles,
+  Bot
 } from 'lucide-react';
 
 interface Client {
@@ -79,6 +82,10 @@ export default function UC1Page() {
   const [filterProfile, setFilterProfile] = useState<string>('');
   const [detailsTab, setDetailsTab] = useState<'notes' | 'measures' | 'incidents'>('notes');
   const [uploadedFiles, setUploadedFiles] = useState<string[]>([]);
+
+  // AI features state
+  const [aiSummary, setAiSummary] = useState<{ summary: string; keyPoints: string[] } | null>(null);
+  const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
 
   // Load clients on mount
   useEffect(() => {
@@ -170,12 +177,43 @@ export default function UC1Page() {
       const response = await fetch('/api/dev/load-mock-data', { method: 'POST' });
       if (!response.ok) throw new Error('Failed to load mock data');
 
-      alert('Mock data succesvol geladen!');
+      const data = await response.json();
+      alert(`Mock data succesvol geladen!\n\n${data.loaded.clients} cliënten\n${data.loaded.notes} notities\n${data.loaded.evidenceLinks} evidence links\n${data.loaded.auditEvents} audit events`);
       loadClients();
       loadStats();
     } catch (error) {
       console.error('Error loading mock data:', error);
       alert('Fout bij laden van mock data');
+    }
+  };
+
+  const generateAISummary = async () => {
+    if (!selectedClient) return;
+
+    setIsGeneratingSummary(true);
+    try {
+      const response = await fetch('/api/uc1/ai/summarize', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          clientId: selectedClient.client_id,
+          focus: 'recent',
+          maxLength: 'medium',
+        }),
+      });
+
+      if (!response.ok) throw new Error('Failed to generate summary');
+
+      const data = await response.json();
+      setAiSummary({
+        summary: data.summary,
+        keyPoints: data.keyPoints || [],
+      });
+    } catch (error) {
+      console.error('Error generating AI summary:', error);
+      alert('AI samenvatting kon niet worden gegenereerd. Mogelijk is Azure OpenAI niet geconfigureerd.');
+    } finally {
+      setIsGeneratingSummary(false);
     }
   };
 
@@ -193,15 +231,35 @@ export default function UC1Page() {
       <aside className="w-80 bg-white border-r border-gray-200 overflow-y-auto">
         <div className="p-4 space-y-6">
           <div>
-            <h3 className="font-semibold text-gray-900 mb-3">Data Upload</h3>
-            <FileUpload
-              clientId={selectedClient?.client_id || 'new'}
-              onUploadComplete={handleUploadComplete}
-              maxFiles={20}
+            <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+              Data Upload
+              <Sparkles className="w-4 h-4 text-purple-600" />
+            </h3>
+            <Explainer
+              title="Smart Upload met AI"
+              type="tip"
+              content={
+                <div className="space-y-2">
+                  <p>Upload zorgrapporten, notities of assessments. Onze AI extraheert automatisch:</p>
+                  <ul className="list-disc list-inside space-y-1 text-xs">
+                    <li>Cliëntgegevens (naam, BSN, WLZ profiel)</li>
+                    <li>Gestructureerde notities met secties</li>
+                    <li>Metingen (Katz-ADL, MMSE, etc.)</li>
+                    <li>Incident rapporten</li>
+                  </ul>
+                  <p className="mt-2">
+                    <strong>Ondersteunde formaten:</strong> PDF, DOCX, CSV
+                  </p>
+                </div>
+              }
             />
-            <p className="text-xs text-gray-500 mt-2">
-              Upload CSV, PDF of DOCX bestanden
-            </p>
+            <div className="mt-3">
+              <FileUpload
+                clientId={selectedClient?.client_id || 'new'}
+                onUploadComplete={handleUploadComplete}
+                maxFiles={20}
+              />
+            </div>
           </div>
 
           {uploadedFiles.length > 0 && (
@@ -452,6 +510,16 @@ export default function UC1Page() {
                     </p>
                   </div>
                   <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={generateAISummary}
+                      disabled={isGeneratingSummary}
+                      className="flex items-center gap-2"
+                    >
+                      <Bot className="w-4 h-4" />
+                      {isGeneratingSummary ? 'Genereren...' : 'AI Samenvatting'}
+                    </Button>
                     <Button variant="outline" size="sm">
                       <Edit className="w-4 h-4 mr-2" />
                       Bewerken
@@ -462,6 +530,7 @@ export default function UC1Page() {
                       onClick={() => {
                         setActiveTab('clients');
                         setSelectedClient(null);
+                        setAiSummary(null);
                       }}
                     >
                       Terug
@@ -490,6 +559,16 @@ export default function UC1Page() {
                   </div>
                 </div>
               </Card>
+
+              {/* AI Summary Card */}
+              {aiSummary && (
+                <AISummaryCard
+                  summary={aiSummary.summary}
+                  keyPoints={aiSummary.keyPoints}
+                  isLoading={isGeneratingSummary}
+                  onRegenerate={generateAISummary}
+                />
+              )}
 
               {/* Data Tabs */}
               <div className="border-b border-gray-200">
