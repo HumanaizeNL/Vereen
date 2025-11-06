@@ -5,9 +5,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import {
   getMeerzorgApplication,
   getClient,
-  getNotesByClient,
-  getMeasuresByClient,
-  getIncidentsByClient,
+  getClientNotes,
+  getClientMeasures,
+  getClientIncidents,
   addNormativeCheck,
 } from '@/lib/db/repository';
 import {
@@ -40,9 +40,9 @@ export async function POST(
     }
 
     // Get dossier data
-    const notes = await getNotesByClient(application.client_id);
-    const measures = await getMeasuresByClient(application.client_id);
-    const incidents = await getIncidentsByClient(application.client_id);
+    const notes = await getClientNotes(application.client_id);
+    const measures = await getClientMeasures(application.client_id);
+    const incidents = await getClientIncidents(application.client_id);
 
     // Parse form_data
     const formData = typeof application.form_data === 'string'

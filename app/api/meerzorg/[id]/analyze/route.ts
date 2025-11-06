@@ -5,9 +5,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import {
   getMeerzorgApplication,
   getClient,
-  getNotesByClient,
-  getMeasuresByClient,
-  getIncidentsByClient,
+  getClientNotes,
+  getClientMeasures,
+  getClientIncidents,
   addMeerzorgFormData,
   updateMeerzorgApplication,
 } from '@/lib/db/repository';
@@ -38,9 +38,9 @@ export async function POST(
     }
 
     // Get dossier data
-    const notes = await getNotesByClient(application.client_id);
-    const measures = await getMeasuresByClient(application.client_id);
-    const incidents = await getIncidentsByClient(application.client_id);
+    const notes = await getClientNotes(application.client_id);
+    const measures = await getClientMeasures(application.client_id);
+    const incidents = await getClientIncidents(application.client_id);
 
     // Analyze dossier
     const analysis = analyzeDossierForMeerzorg({

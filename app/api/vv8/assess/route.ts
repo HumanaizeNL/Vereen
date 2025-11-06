@@ -4,9 +4,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import {
   getClient,
-  getNotesByClient,
-  getMeasuresByClient,
-  getIncidentsByClient,
+  getClientNotes,
+  getClientMeasures,
+  getClientIncidents,
 } from '@/lib/db/repository';
 import {
   executeNormativeChecks,
@@ -50,9 +50,9 @@ export async function POST(request: NextRequest) {
 
     // Get dossier data
     const [notes, measures, incidents] = await Promise.all([
-      getNotesByClient(client_id),
-      getMeasuresByClient(client_id),
-      getIncidentsByClient(client_id),
+      getClientNotes(client_id),
+      getClientMeasures(client_id),
+      getClientIncidents(client_id),
     ]);
 
     // Initialize VV8 criteria

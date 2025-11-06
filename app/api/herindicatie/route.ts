@@ -4,12 +4,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import {
   getClient,
-  getNotesByClient,
-  getMeasuresByClient,
-  getIncidentsByClient,
-  getTrendMonitoringByClient,
-  getRiskFlagsByClient,
-  getMdReviewsByClient,
+  getClientNotes,
+  getClientMeasures,
+  getClientIncidents,
+  getClientTrends,
+  getClientRiskFlags,
+  getClientMdReviews,
 } from '@/lib/db/repository';
 
 export async function GET(request: NextRequest) {
@@ -35,12 +35,12 @@ export async function GET(request: NextRequest) {
 
     // Get all relevant data
     const [notes, measures, incidents, trends, riskFlags, mdReviews] = await Promise.all([
-      getNotesByClient(clientId),
-      getMeasuresByClient(clientId),
-      getIncidentsByClient(clientId),
-      getTrendMonitoringByClient(clientId),
-      getRiskFlagsByClient(clientId),
-      getMdReviewsByClient(clientId),
+      getClientNotes(clientId),
+      getClientMeasures(clientId),
+      getClientIncidents(clientId),
+      getClientTrends(clientId),
+      getClientRiskFlags(clientId),
+      getClientMdReviews(clientId),
     ]);
 
     // Calculate basic statistics

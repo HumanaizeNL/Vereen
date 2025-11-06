@@ -4,8 +4,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import {
   getClient,
-  getMeasuresByClient,
-  getIncidentsByClient,
+  getClientMeasures,
+  getClientIncidents,
   addTrendMonitoring,
 } from '@/lib/db/repository';
 
@@ -44,8 +44,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Get historical data
-    const measures = await getMeasuresByClient(client_id);
-    const incidents = await getIncidentsByClient(client_id);
+    const measures = await getClientMeasures(client_id);
+    const incidents = await getClientIncidents(client_id);
 
     // Define period
     const endDate = new Date();

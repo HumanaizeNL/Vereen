@@ -4,9 +4,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import {
   getClient,
-  getMeasuresByClient,
-  getIncidentsByClient,
-  getTrendMonitoringByClient,
+  getClientMeasures,
+  getClientIncidents,
+  getClientTrends,
   addRiskFlag,
   addAuditEvent,
 } from '@/lib/db/repository';
@@ -44,9 +44,9 @@ export async function POST(request: NextRequest) {
     if (auto_detect) {
       // Get data for risk detection
       const [measures, incidents, trends] = await Promise.all([
-        getMeasuresByClient(client_id),
-        getIncidentsByClient(client_id),
-        getTrendMonitoringByClient(client_id),
+        getClientMeasures(client_id),
+        getClientIncidents(client_id),
+        getClientTrends(client_id),
       ]);
 
       // Detect high incident rate
