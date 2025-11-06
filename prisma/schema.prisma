@@ -12,35 +12,40 @@ datasource db {
 
 // Client entity - Healthcare client information
 model Client {
-  id            String   @id @default(cuid()) @map("client_id")
-  name          String
-  dob           String
-  bsnEncrypted  String?  @map("bsn_encrypted")
-  wlzProfile    String   @map("wlz_profile")
-  provider      String
-  createdAt     DateTime @default(now()) @map("created_at")
+  id           String   @id @default(cuid()) @map("client_id")
+  name         String
+  dob          String
+  bsnEncrypted String?  @map("bsn_encrypted")
+  wlzProfile   String   @map("wlz_profile")
+  provider     String
+  createdAt    DateTime @default(now()) @map("created_at")
 
   // Relations
-  notes         Note[]
-  measures      Measure[]
-  incidents     Incident[]
-  evidenceLinks EvidenceLink[]
-  auditEvents   AuditEvent[]
+  notes           Note[]
+  measures        Measure[]
+  incidents       Incident[]
+  evidenceLinks   EvidenceLink[]
+  auditEvents     AuditEvent[]
+  meerzorgApps    MeerzorgApplication[]
+  normativeChecks NormativeCheck[]
+  trendMonitoring TrendMonitoring[]
+  riskFlags       RiskFlag[]
+  mdReviews       MdReview[]
 
   @@map("clients")
 }
 
 // Note entity - Healthcare notes and observations
 model Note {
-  id        String   @id @default(cuid())
-  clientId  String   @map("client_id")
-  date      String
-  author    String
-  section   String
-  text      String
+  id       String @id @default(cuid())
+  clientId String @map("client_id")
+  date     String
+  author   String
+  section  String
+  text     String
 
   // Relations
-  client    Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
 
   @@index([clientId])
   @@map("notes")
@@ -48,15 +53,15 @@ model Note {
 
 // Measure entity - Healthcare measurements and assessments
 model Measure {
-  id        String   @id @default(cuid())
-  clientId  String   @map("client_id")
-  date      String
-  type      String   // e.g., 'Katz-ADL', 'GAF', 'NPI', 'MMSE'
-  score     String
-  comment   String?
+  id       String  @id @default(cuid())
+  clientId String  @map("client_id")
+  date     String
+  type     String // e.g., 'Katz-ADL', 'GAF', 'NPI', 'MMSE'
+  score    String
+  comment  String?
 
   // Relations
-  client    Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
 
   @@index([clientId])
   @@index([type])
@@ -65,15 +70,15 @@ model Measure {
 
 // Incident entity - Healthcare incidents and events
 model Incident {
-  id          String   @id @default(cuid())
-  clientId    String   @map("client_id")
+  id          String @id @default(cuid())
+  clientId    String @map("client_id")
   date        String
   type        String
   severity    String
   description String
 
   // Relations
-  client      Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
 
   @@index([clientId])
   @@index([severity])
@@ -84,34 +89,206 @@ model Incident {
 model EvidenceLink {
   id         String   @id @default(cuid())
   clientId   String   @map("client_id")
-  targetPath String   @map("target_path") // e.g., 'uc2.criteria.ADL'
-  source     String   // e.g., 'notes.csv#201'
+  targetPath String   @map("target_path") // e.g., 'uc2.criteria.ADL', 'uc1.meerzorg.form_field'
+  sourceType String   @map("source_type") // 'note', 'measure', 'incident', 'document'
+  sourceId   String   @map("source_id")
   snippet    String
-  createdBy  String   @map("created_by")
+  relevance  Float    @default(0.0) // 0.0 to 1.0
+  confidence Float    @default(0.0) // 0.0 to 1.0
+  createdBy  String   @map("created_by") // 'ai' or user identifier
   createdAt  DateTime @default(now()) @map("created_at")
 
   // Relations
-  client     Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
 
   @@index([clientId])
   @@index([targetPath])
+  @@index([sourceType])
   @@map("evidence_links")
 }
 
 // AuditEvent entity - Audit trail for all actions
 model AuditEvent {
-  id        String   @id @default(cuid())
-  ts        DateTime @default(now())
-  actor     String   // 'ai' | 'user@email.com'
-  clientId  String   @map("client_id")
-  action    String
-  meta      String   // JSON string
+  id       String   @id @default(cuid())
+  ts       DateTime @default(now())
+  actor    String // 'ai' | 'user@email.com'
+  clientId String   @map("client_id")
+  action   String
+  meta     String // JSON string
 
   // Relations
-  client    Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
 
   @@index([clientId])
   @@index([actor])
   @@index([ts])
   @@map("audit_events")
+}
+
+// ============================================================================
+// UC1 - Meerzorg Application Tables
+// ============================================================================
+
+// MeerzorgApplication entity - Meerzorg funding applications
+model MeerzorgApplication {
+  id          String    @id @default(cuid())
+  clientId    String    @map("client_id")
+  status      String    @default("draft") // draft, in_review, submitted, approved, rejected
+  formData    String    @map("form_data") // JSON string with form fields
+  version     String    @default("2026") // Framework version: 2025, 2026
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  submittedAt DateTime? @map("submitted_at")
+  submittedBy String?   @map("submitted_by")
+
+  // Relations
+  client          Client             @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  formFields      MeerzorgFormData[]
+  normativeChecks NormativeCheck[]
+  reviewWorkflows ReviewWorkflow[]
+
+  @@index([clientId])
+  @@index([status])
+  @@map("meerzorg_applications")
+}
+
+// MeerzorgFormData entity - Form field mappings from dossier
+model MeerzorgFormData {
+  id            String   @id @default(cuid())
+  applicationId String   @map("application_id")
+  fieldName     String   @map("field_name")
+  fieldValue    String   @map("field_value")
+  sourceType    String   @map("source_type") // note, measure, incident, document
+  sourceId      String   @map("source_id")
+  confidence    Float    @default(0.0) // 0.0 to 1.0
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  // Relations
+  application MeerzorgApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@index([applicationId])
+  @@index([fieldName])
+  @@map("meerzorg_form_data")
+}
+
+// NormativeCheck entity - Validation results against Toetsingskader
+model NormativeCheck {
+  id            String   @id @default(cuid())
+  applicationId String?  @map("application_id") // nullable for general client checks
+  clientId      String   @map("client_id")
+  checkType     String   @map("check_type") // e.g., 'required_field', 'toetsingskader_rule', 'completeness'
+  ruleId        String   @map("rule_id") // identifier for the specific rule
+  status        String // pass, fail, warning
+  message       String
+  severity      String   @default("medium") // low, medium, high, critical
+  checkedAt     DateTime @default(now()) @map("checked_at")
+
+  // Relations
+  application MeerzorgApplication? @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  client      Client               @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@index([applicationId])
+  @@index([clientId])
+  @@index([status])
+  @@map("normative_checks")
+}
+
+// ReviewWorkflow entity - Approval workflow states
+model ReviewWorkflow {
+  id            String   @id @default(cuid())
+  applicationId String   @map("application_id")
+  reviewerRole  String   @map("reviewer_role") // professional, backoffice, admin
+  reviewerName  String   @map("reviewer_name")
+  status        String // pending, approved, rejected, needs_revision
+  comments      String?
+  reviewedAt    DateTime @default(now()) @map("reviewed_at")
+
+  // Relations
+  application MeerzorgApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@index([applicationId])
+  @@index([status])
+  @@map("review_workflow")
+}
+
+// ============================================================================
+// UC2 - Herindicatie Enhancement Tables
+// ============================================================================
+
+// TrendMonitoring entity - Time-series data for trend detection
+model TrendMonitoring {
+  id          String   @id @default(cuid())
+  clientId    String   @map("client_id")
+  metricType  String   @map("metric_type") // care_hours, incident_count, bpsd_score, adl_score
+  metricValue Float    @map("metric_value")
+  periodStart String   @map("period_start") // Date string
+  periodEnd   String   @map("period_end") // Date string
+  recordedAt  DateTime @default(now()) @map("recorded_at")
+
+  // Relations
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@index([clientId])
+  @@index([metricType])
+  @@index([recordedAt])
+  @@map("trend_monitoring")
+}
+
+// RiskFlag entity - Automated risk flags for clients
+model RiskFlag {
+  id          String    @id @default(cuid())
+  clientId    String    @map("client_id")
+  flagType    String    @map("flag_type") // increased_care, high_incidents, deteriorating_adl
+  severity    String // low, medium, high, critical
+  description String
+  flaggedAt   DateTime  @default(now()) @map("flagged_at")
+  resolvedAt  DateTime? @map("resolved_at")
+  resolvedBy  String?   @map("resolved_by")
+
+  // Relations
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@index([clientId])
+  @@index([severity])
+  @@index([flaggedAt])
+  @@map("risk_flags")
+}
+
+// MdReview entity - Multidisciplinary team review notes
+model MdReview {
+  id                    String   @id @default(cuid())
+  clientId              String   @map("client_id")
+  reviewerName          String   @map("reviewer_name")
+  reviewerRole          String   @map("reviewer_role") // physician, psychologist, ergo, physio, nurse
+  clinicalNotes         String   @map("clinical_notes")
+  decision              String // approve, observe, reject
+  observationPeriodDays Int?     @map("observation_period_days")
+  reviewedAt            DateTime @default(now()) @map("reviewed_at")
+
+  // Relations
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@index([clientId])
+  @@index([decision])
+  @@map("md_reviews")
+}
+
+// ============================================================================
+// Shared Infrastructure Tables
+// ============================================================================
+
+// FrameworkVersion entity - Track regulatory framework versions
+model FrameworkVersion {
+  id            String   @id @default(cuid())
+  frameworkType String   @map("framework_type") // toetsingskader, vv8, meerzorg
+  version       String // 2025, 2026
+  effectiveFrom String   @map("effective_from") // Date string
+  effectiveTo   String?  @map("effective_to") // Date string, null if current
+  rulesJson     String   @map("rules_json") // JSON string with rules
+  templatePath  String?  @map("template_path") // Path to template file
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@unique([frameworkType, version])
+  @@index([frameworkType])
+  @@map("framework_versions")
 }

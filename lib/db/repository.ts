@@ -223,21 +223,40 @@ export async function getClientEvidence(client_id: string): Promise<EvidenceLink
     id: ev.id,
     client_id: ev.clientId,
     target_path: ev.targetPath,
-    source: ev.source,
+    source: ev.sourceType + ':' + ev.sourceId, // Legacy format
+    source_type: ev.sourceType,
+    source_id: ev.sourceId,
     snippet: ev.snippet,
+    relevance: ev.relevance,
+    confidence: ev.confidence,
     created_by: ev.createdBy,
     created_at: ev.createdAt.toISOString(),
   }));
 }
 
 export async function addEvidence(evidence: EvidenceLink): Promise<void> {
+  // Parse legacy source format if present
+  let sourceType = evidence.source_type || 'note';
+  let sourceId = evidence.source_id || '';
+
+  if (!evidence.source_type && evidence.source) {
+    const parts = evidence.source.split(':');
+    if (parts.length === 2) {
+      sourceType = parts[0];
+      sourceId = parts[1];
+    }
+  }
+
   await prisma.evidenceLink.create({
     data: {
       id: evidence.id,
       clientId: evidence.client_id,
       targetPath: evidence.target_path,
-      source: evidence.source,
+      sourceType,
+      sourceId,
       snippet: evidence.snippet,
+      relevance: evidence.relevance || 0.0,
+      confidence: evidence.confidence || 0.0,
       createdBy: evidence.created_by,
       createdAt: new Date(evidence.created_at),
     },
@@ -260,8 +279,12 @@ export async function getEvidenceByTarget(
     id: ev.id,
     client_id: ev.clientId,
     target_path: ev.targetPath,
-    source: ev.source,
+    source: ev.sourceType + ':' + ev.sourceId,
+    source_type: ev.sourceType,
+    source_id: ev.sourceId,
     snippet: ev.snippet,
+    relevance: ev.relevance,
+    confidence: ev.confidence,
     created_by: ev.createdBy,
     created_at: ev.createdAt.toISOString(),
   }));
@@ -341,10 +364,307 @@ export async function deleteClient(client_id: string): Promise<void> {
 
 export async function clearAllData(): Promise<void> {
   // Delete in order to respect foreign key constraints
+  // Sprint 1 tables
+  await prisma.reviewWorkflow.deleteMany();
+  await prisma.meerzorgFormData.deleteMany();
+  await prisma.normativeCheck.deleteMany();
+  await prisma.meerzorgApplication.deleteMany();
+  await prisma.mdReview.deleteMany();
+  await prisma.riskFlag.deleteMany();
+  await prisma.trendMonitoring.deleteMany();
+
+  // Original tables
   await prisma.auditEvent.deleteMany();
   await prisma.evidenceLink.deleteMany();
   await prisma.incident.deleteMany();
   await prisma.measure.deleteMany();
   await prisma.note.deleteMany();
   await prisma.client.deleteMany();
+
+  // Framework versions (optional - usually keep these)
+  // await prisma.frameworkVersion.deleteMany();
+}
+
+// ===============================================
+// UC1 - MEERZORG APPLICATION OPERATIONS
+// ===============================================
+
+export async function createMeerzorgApplication(data: {
+  clientId: string;
+  status?: string;
+  formData?: Record<string, any>;
+  version?: string;
+}): Promise<string> {
+  const app = await prisma.meerzorgApplication.create({
+    data: {
+      clientId: data.clientId,
+      status: data.status || 'draft',
+      formData: JSON.stringify(data.formData || {}),
+      version: data.version || '2026',
+    },
+  });
+  return app.id;
+}
+
+export async function getMeerzorgApplication(id: string) {
+  const app = await prisma.meerzorgApplication.findUnique({
+    where: { id },
+    include: {
+      client: true,
+      formFields: true,
+      normativeChecks: true,
+      reviewWorkflows: { orderBy: { reviewedAt: 'desc' } },
+    },
+  });
+
+  if (!app) return null;
+
+  return {
+    ...app,
+    formData: JSON.parse(app.formData),
+  };
+}
+
+export async function getClientMeerzorgApplications(clientId: string) {
+  const apps = await prisma.meerzorgApplication.findMany({
+    where: { clientId },
+    orderBy: { createdAt: 'desc' },
+  });
+
+  return apps.map(app => ({
+    ...app,
+    formData: JSON.parse(app.formData),
+  }));
+}
+
+export async function updateMeerzorgApplication(
+  id: string,
+  data: {
+    status?: string;
+    formData?: Record<string, any>;
+    submittedBy?: string;
+  }
+) {
+  return await prisma.meerzorgApplication.update({
+    where: { id },
+    data: {
+      status: data.status,
+      formData: data.formData ? JSON.stringify(data.formData) : undefined,
+      submittedAt: data.status === 'submitted' ? new Date() : undefined,
+      submittedBy: data.submittedBy,
+    },
+  });
+}
+
+// ===============================================
+// NORMATIVE CHECK OPERATIONS
+// ===============================================
+
+export async function addNormativeCheck(check: {
+  applicationId?: string;
+  clientId: string;
+  checkType: string;
+  ruleId: string;
+  status: string;
+  message: string;
+  severity?: string;
+}) {
+  return await prisma.normativeCheck.create({
+    data: {
+      applicationId: check.applicationId,
+      clientId: check.clientId,
+      checkType: check.checkType,
+      ruleId: check.ruleId,
+      status: check.status,
+      message: check.message,
+      severity: check.severity || 'medium',
+    },
+  });
+}
+
+export async function getNormativeChecks(filters: {
+  applicationId?: string;
+  clientId?: string;
+  status?: string;
+}) {
+  return await prisma.normativeCheck.findMany({
+    where: {
+      applicationId: filters.applicationId,
+      clientId: filters.clientId,
+      status: filters.status,
+    },
+    orderBy: { checkedAt: 'desc' },
+  });
+}
+
+// ===============================================
+// REVIEW WORKFLOW OPERATIONS
+// ===============================================
+
+export async function addReviewWorkflow(review: {
+  applicationId: string;
+  reviewerRole: string;
+  reviewerName: string;
+  status: string;
+  comments?: string;
+}) {
+  return await prisma.reviewWorkflow.create({
+    data: review,
+  });
+}
+
+export async function getApplicationReviews(applicationId: string) {
+  return await prisma.reviewWorkflow.findMany({
+    where: { applicationId },
+    orderBy: { reviewedAt: 'desc' },
+  });
+}
+
+// ===============================================
+// UC2 - TREND MONITORING OPERATIONS
+// ===============================================
+
+export async function addTrendMonitoring(trend: {
+  clientId: string;
+  metricType: string;
+  metricValue: number;
+  periodStart: string;
+  periodEnd: string;
+}) {
+  return await prisma.trendMonitoring.create({
+    data: trend,
+  });
+}
+
+export async function getClientTrends(
+  clientId: string,
+  metricType?: string,
+  limit = 100
+) {
+  return await prisma.trendMonitoring.findMany({
+    where: {
+      clientId,
+      ...(metricType && { metricType }),
+    },
+    orderBy: { recordedAt: 'desc' },
+    take: limit,
+  });
+}
+
+// ===============================================
+// RISK FLAG OPERATIONS
+// ===============================================
+
+export async function addRiskFlag(flag: {
+  clientId: string;
+  flagType: string;
+  severity: string;
+  description: string;
+}) {
+  return await prisma.riskFlag.create({
+    data: flag,
+  });
+}
+
+export async function getClientRiskFlags(clientId: string, includeResolved = false) {
+  return await prisma.riskFlag.findMany({
+    where: {
+      clientId,
+      ...(includeResolved ? {} : { resolvedAt: null }),
+    },
+    orderBy: { flaggedAt: 'desc' },
+  });
+}
+
+export async function resolveRiskFlag(id: string, resolvedBy: string) {
+  return await prisma.riskFlag.update({
+    where: { id },
+    data: {
+      resolvedAt: new Date(),
+      resolvedBy,
+    },
+  });
+}
+
+// ===============================================
+// MD REVIEW OPERATIONS
+// ===============================================
+
+export async function addMdReview(review: {
+  clientId: string;
+  reviewerName: string;
+  reviewerRole: string;
+  clinicalNotes: string;
+  decision: string;
+  observationPeriodDays?: number;
+}) {
+  return await prisma.mdReview.create({
+    data: review,
+  });
+}
+
+export async function getClientMdReviews(clientId: string) {
+  return await prisma.mdReview.findMany({
+    where: { clientId },
+    orderBy: { reviewedAt: 'desc' },
+  });
+}
+
+// ===============================================
+// FRAMEWORK VERSION OPERATIONS
+// ===============================================
+
+export async function addFrameworkVersion(framework: {
+  frameworkType: string;
+  version: string;
+  effectiveFrom: string;
+  effectiveTo?: string;
+  rulesJson: Record<string, any>;
+  templatePath?: string;
+}) {
+  return await prisma.frameworkVersion.create({
+    data: {
+      frameworkType: framework.frameworkType,
+      version: framework.version,
+      effectiveFrom: framework.effectiveFrom,
+      effectiveTo: framework.effectiveTo,
+      rulesJson: JSON.stringify(framework.rulesJson),
+      templatePath: framework.templatePath,
+    },
+  });
+}
+
+export async function getFrameworkVersion(frameworkType: string, version: string) {
+  const framework = await prisma.frameworkVersion.findUnique({
+    where: {
+      frameworkType_version: {
+        frameworkType,
+        version,
+      },
+    },
+  });
+
+  if (!framework) return null;
+
+  return {
+    ...framework,
+    rulesJson: JSON.parse(framework.rulesJson),
+  };
+}
+
+export async function getCurrentFrameworkVersion(frameworkType: string) {
+  const framework = await prisma.frameworkVersion.findFirst({
+    where: {
+      frameworkType,
+      effectiveTo: null, // Current version has no end date
+    },
+    orderBy: { effectiveFrom: 'desc' },
+  });
+
+  if (!framework) return null;
+
+  return {
+    ...framework,
+    rulesJson: JSON.parse(framework.rulesJson),
+  };
 }
