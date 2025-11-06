@@ -55,7 +55,7 @@ export interface AuditEvent {
   id: string;
   ts: string;
   actor: string; // 'ai' | 'user@email.com'
-  client_id: string;
+  client_id?: string;
   action: string;
   meta: Record<string, any>;
 }

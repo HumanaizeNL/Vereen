@@ -112,12 +112,12 @@ model AuditEvent {
   id       String   @id @default(cuid())
   ts       DateTime @default(now())
   actor    String // 'ai' | 'user@email.com'
-  clientId String   @map("client_id")
+  clientId String?  @map("client_id")
   action   String
   meta     String // JSON string
 
   // Relations
-  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  client Client? @relation(fields: [clientId], references: [id], onDelete: Cascade)
 
   @@index([clientId])
   @@index([actor])

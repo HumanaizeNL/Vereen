@@ -300,7 +300,7 @@ export async function addAuditEvent(event: AuditEvent): Promise<void> {
       id: event.id,
       ts: new Date(event.ts),
       actor: event.actor,
-      clientId: event.client_id,
+      clientId: event.client_id || null,
       action: event.action,
       meta: JSON.stringify(event.meta),
     },
