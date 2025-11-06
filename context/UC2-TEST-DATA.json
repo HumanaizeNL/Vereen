@@ -1,0 +1,402 @@
+{
+  "_description": "Complete test data for UC2 Herindicatie - Load via /api/dev/load-mock-data or seed script",
+  "_version": "1.0",
+  "_date": "2024-11-06",
+  "clients": [
+    {
+      "id": "test-client-001",
+      "name": "Maria van den Berg",
+      "dob": "1945-03-15",
+      "bsn_encrypted": "encrypted_mvdb_12345",
+      "wlz_profile": "VV8",
+      "provider": "Zorgcentrum Vereen"
+    },
+    {
+      "id": "test-client-002",
+      "name": "Jan Bakker",
+      "dob": "1940-07-22",
+      "bsn_encrypted": "encrypted_jb_67890",
+      "wlz_profile": "VV7",
+      "provider": "Zorgcentrum Vereen"
+    },
+    {
+      "id": "test-client-003",
+      "name": "Anna de Vries",
+      "dob": "1938-11-08",
+      "bsn_encrypted": "encrypted_adv_11223",
+      "wlz_profile": "VV9",
+      "provider": "Zorgcentrum Vereen"
+    }
+  ],
+  "notes": [
+    {
+      "client_id": "test-client-001",
+      "date": "2024-10-15",
+      "author": "Lisa Jansen, verzorgende IG",
+      "section": "ADL",
+      "text": "Cliënte heeft toenemende moeite met zelfstandig wassen en aankleden. Heeft nu dagelijks volledige ondersteuning nodig bij douchen. Voorheen kon ze dit met toezicht. Cognitieve achteruitgang merkbaar - vergeet stappen in de routine."
+    },
+    {
+      "client_id": "test-client-001",
+      "date": "2024-10-10",
+      "author": "Mark de Boer, verpleegkundige",
+      "section": "Mobiliteit",
+      "text": "Transfer van bed naar stoel gaat met meer moeite. Balans is verslechterd. Fysiotherapeut geraadpleegd voor loophulpmiddel. Risico op vallen is toegenomen."
+    },
+    {
+      "client_id": "test-client-001",
+      "date": "2024-10-05",
+      "author": "Sophie Smit, verzorgende IG",
+      "section": "Gedrag",
+      "text": "Cliënte vertoont toenemende onrust in de avonduren. Dwaalt door de gang, zoekt naar 'huis'. Reageert angstig op nieuwe gezichten. Sundowing verschijnselen duidelijk aanwezig."
+    },
+    {
+      "client_id": "test-client-001",
+      "date": "2024-09-28",
+      "author": "Thomas Klein, verzorgende IG",
+      "section": "ADL",
+      "text": "Incontinentie is toegenomen. Cliënte draagt nu permanent incontinentiemateriaal. Kan niet meer tijdig toiletbehoefte aangeven door cognitieve achteruitgang."
+    },
+    {
+      "client_id": "test-client-001",
+      "date": "2024-09-20",
+      "author": "Lisa Jansen, verzorgende IG",
+      "section": "Voeding",
+      "text": "Eetlust verminderd. Gewichtsverlies van 3kg in afgelopen maand. Heeft aanmoediging en begeleiding nodig tijdens maaltijden. Vergeet soms te kauwen en doorslikken."
+    },
+    {
+      "client_id": "test-client-001",
+      "date": "2024-09-15",
+      "author": "Dr. Peters, specialist ouderengeneeskunde",
+      "section": "Medisch",
+      "text": "Progressie van dementie vastgesteld. MMSE score gedaald van 18 naar 12 in 6 maanden tijd. Overgang naar ernstige fase. Medicatie aangepast. Zorgbehoefte zal toenemen."
+    },
+    {
+      "client_id": "test-client-001",
+      "date": "2024-08-30",
+      "author": "Mark de Boer, verpleegkundige",
+      "section": "Nacht",
+      "text": "Nachtelijke onrust toegenomen. Wordt 4-5x per nacht wakker. Roept om hulp. Heeft begeleiding nodig bij toiletgang. Nachtzorg uren moeten worden uitgebreid."
+    },
+    {
+      "client_id": "test-client-001",
+      "date": "2024-08-15",
+      "author": "Sophie Smit, verzorgende IG",
+      "section": "Sociaal",
+      "text": "Familie gesproken over achteruitgang. Dochter maakt zich zorgen over veiligheid en welzijn. Familie vraagt om evaluatie of huidige zorg nog toereikend is."
+    },
+    {
+      "client_id": "test-client-002",
+      "date": "2024-10-12",
+      "author": "Peter Visser, verzorgende IG",
+      "section": "ADL",
+      "text": "Cliënt functioneert stabiel. Kan zelfstandig wassen en aankleden met enkel toezicht. Heeft hulp nodig bij douchen vanwege mobiliteitsbeperking."
+    },
+    {
+      "client_id": "test-client-002",
+      "date": "2024-09-15",
+      "author": "Maria Konings, verpleegkundige",
+      "section": "Medisch",
+      "text": "Geen significante veranderingen in gezondheidstoestand. Medicatie trouw ingenomen. Bloeddruk goed gereguleerd. Dagelijkse conditie goed."
+    },
+    {
+      "client_id": "test-client-003",
+      "date": "2024-10-18",
+      "author": "Emma de Groot, verpleegkundige",
+      "section": "Gedrag",
+      "text": "Ernstige agitatieperiodes met verbaal agressief gedrag. Slaat naar verzorgenden tijdens ADL. Kan niet worden gestopt met woorden alleen. Team vindt het moeilijk om zorg te verlenen."
+    },
+    {
+      "client_id": "test-client-003",
+      "date": "2024-10-10",
+      "author": "Dr. Van Dijk, psychiater",
+      "section": "Medisch",
+      "text": "Diagnose: Ernstige BPSD in context van vasculaire dementie. NPI score zeer hoog (72 punten). Medicamenteuze behandeling opgestart met antipsychoticum. Monitoring vereist. Overleg met gedragsdeskundige gestart."
+    },
+    {
+      "client_id": "test-client-003",
+      "date": "2024-09-15",
+      "author": "Emma de Groot, verpleegkundige",
+      "section": "Veiligheid",
+      "text": "Team ervaart hoge werkdruk en stress door agressief gedrag cliënt. Al twee verzorgenden met letsel. Vragen om specialistische ondersteuning en mogelijk andere setting voor cliënt."
+    }
+  ],
+  "measures": [
+    {
+      "client_id": "test-client-001",
+      "date": "2024-10-01",
+      "type": "Katz-ADL",
+      "score": "2",
+      "comment": "Sterk verminderd: afhankelijk bij wassen, kleden, toilet, transfer. Alleen eten gaat nog redelijk zelfstandig."
+    },
+    {
+      "client_id": "test-client-001",
+      "date": "2024-07-01",
+      "type": "Katz-ADL",
+      "score": "5",
+      "comment": "Matig afhankelijk: hulp nodig bij douchen en aankleden. Overige ADL met toezicht."
+    },
+    {
+      "client_id": "test-client-001",
+      "date": "2024-04-01",
+      "type": "Katz-ADL",
+      "score": "8",
+      "comment": "Licht afhankelijk: alleen hulp bij douchen en sommige kledingstukken."
+    },
+    {
+      "client_id": "test-client-001",
+      "date": "2024-10-05",
+      "type": "MMSE",
+      "score": "12",
+      "comment": "Ernstige cognitieve stoornis. Duidelijke achteruitgang ten opzichte van vorige meting."
+    },
+    {
+      "client_id": "test-client-001",
+      "date": "2024-04-10",
+      "type": "MMSE",
+      "score": "18",
+      "comment": "Matige cognitieve stoornis."
+    },
+    {
+      "client_id": "test-client-001",
+      "date": "2024-10-08",
+      "type": "NPI",
+      "score": "42",
+      "comment": "Verhoogd: Agitatie (8), Angst (6), Apathie (4), Nachtelijk gedrag (8), Eetlustverandering (6), Wanen (6), Irritabiliteit (4)"
+    },
+    {
+      "client_id": "test-client-001",
+      "date": "2024-07-05",
+      "type": "NPI",
+      "score": "28",
+      "comment": "Matig: Angst (4), Apathie (4), Nachtelijk gedrag (6), Agitatie (4), Eetlust (4), Irritabiliteit (6)"
+    },
+    {
+      "client_id": "test-client-001",
+      "date": "2024-04-08",
+      "type": "NPI",
+      "score": "18",
+      "comment": "Licht: Angst (4), Nachtelijk gedrag (4), Apathie (4), Irritabiliteit (6)"
+    },
+    {
+      "client_id": "test-client-002",
+      "date": "2024-10-01",
+      "type": "Katz-ADL",
+      "score": "9",
+      "comment": "Stabiel: alleen hulp nodig bij douchen."
+    },
+    {
+      "client_id": "test-client-002",
+      "date": "2024-07-01",
+      "type": "Katz-ADL",
+      "score": "10",
+      "comment": "Zeer zelfstandig functionerend."
+    },
+    {
+      "client_id": "test-client-002",
+      "date": "2024-04-01",
+      "type": "Katz-ADL",
+      "score": "10",
+      "comment": "Stabiel, geen veranderingen."
+    },
+    {
+      "client_id": "test-client-003",
+      "date": "2024-10-15",
+      "type": "NPI",
+      "score": "72",
+      "comment": "Zeer hoog: Agitatie (12), Agressie (12), Wanen (8), Angst (8), Hallucinaties (6), Irritabiliteit (10), Ontremming (8), Nachtelijk gedrag (8)"
+    },
+    {
+      "client_id": "test-client-003",
+      "date": "2024-08-01",
+      "type": "NPI",
+      "score": "58",
+      "comment": "Hoog maar minder ernstig dan huidige situatie."
+    },
+    {
+      "client_id": "test-client-003",
+      "date": "2024-10-15",
+      "type": "CMAI",
+      "score": "68",
+      "comment": "Cohen-Mansfield Agitation Inventory zeer hoog - fysieke agressie, verbale agressie, motorische onrust"
+    },
+    {
+      "client_id": "test-client-003",
+      "date": "2024-10-01",
+      "type": "Katz-ADL",
+      "score": "7",
+      "comment": "ADL redelijk maar zorg moeilijk uitvoerbaar door gedragsproblematiek"
+    }
+  ],
+  "incidents": [
+    {
+      "client_id": "test-client-001",
+      "date": "2024-10-20",
+      "type": "Val",
+      "severity": "Matig",
+      "description": "Cliënte gevallen in badkamer tijdens ochtendverzorging. Probeerde zelfstandig op te staan uit stoel zonder hulp te vragen. Geen letsel, wel schrik."
+    },
+    {
+      "client_id": "test-client-001",
+      "date": "2024-10-12",
+      "type": "Dwalen",
+      "severity": "Matig",
+      "description": "Cliënte aangetroffen in verkeerde kamer, probeerde in bed van andere bewoner te gaan liggen. Gedesoriënteerd in tijd en plaats. Rustig terugbegeleid naar eigen kamer."
+    },
+    {
+      "client_id": "test-client-001",
+      "date": "2024-10-05",
+      "type": "Onrust",
+      "severity": "Laag",
+      "description": "Avondlijke onrust met roepen om hulp. Angstig en verward. Heeft 45 minuten extra begeleiding nodig gehad om te kalmeren."
+    },
+    {
+      "client_id": "test-client-001",
+      "date": "2024-09-28",
+      "type": "Val",
+      "severity": "Hoog",
+      "description": "Val uit bed tijdens nacht. Probeerde zelfstandig naar toilet te gaan. Hematoom op heup. Arts geconsulteerd, geen fractuur. Bedgalg geplaatst."
+    },
+    {
+      "client_id": "test-client-001",
+      "date": "2024-09-22",
+      "type": "Medicatie",
+      "severity": "Laag",
+      "description": "Weigerde medicatie in te nemen. Herkende verpleegkundige niet en wantrouwde haar. Na geruststellend gesprek alsnog ingenomen."
+    },
+    {
+      "client_id": "test-client-001",
+      "date": "2024-09-15",
+      "type": "Verzet zorg",
+      "severity": "Matig",
+      "description": "Verzet bij ochtendverzorging. Duwde verzorgende weg, riep dat ze naar huis wilde. Zorg uitgesteld en later op dag met succes uitgevoerd."
+    },
+    {
+      "client_id": "test-client-001",
+      "date": "2024-09-08",
+      "type": "Onrust",
+      "severity": "Matig",
+      "description": "Nachtelijke onrust met dwalen door de gang. Wakker maken van medebewoners. Extra nachtzorg ingezet voor begeleiding."
+    },
+    {
+      "client_id": "test-client-001",
+      "date": "2024-08-30",
+      "type": "Dwalen",
+      "severity": "Hoog",
+      "description": "Cliënte probeerde het gebouw te verlaten via nooduitgang. Alarm afgegaan. Politie ingeschakeld. Zeer angstig en verward. Wilde 'naar huis naar kinderen'."
+    },
+    {
+      "client_id": "test-client-001",
+      "date": "2024-08-25",
+      "type": "Val",
+      "severity": "Matig",
+      "description": "Gestruikeld over eigen voeten in gang. Ondersteund door verzorgende dus geen val compleet. Wel instabiel in balans."
+    },
+    {
+      "client_id": "test-client-001",
+      "date": "2024-08-18",
+      "type": "Eetproblemen",
+      "severity": "Matig",
+      "description": "Verslikte zich tijdens avondmaaltijd. Hoesten en rood aangelopen. Kort beademing ondersteund, daarna weer goed. Advies logopedie aangevraagd."
+    },
+    {
+      "client_id": "test-client-002",
+      "date": "2024-09-10",
+      "type": "Medicatie",
+      "severity": "Laag",
+      "description": "Vergeten ochtendmedicatie in te nemen. Tijdens controle geconstateerd en alsnog ingenomen."
+    },
+    {
+      "client_id": "test-client-002",
+      "date": "2024-07-22",
+      "type": "Val",
+      "severity": "Laag",
+      "description": "Lichte struikeling over drempel. Geen letsel. Alert en goed hersteld."
+    },
+    {
+      "client_id": "test-client-003",
+      "date": "2024-10-22",
+      "type": "Agressie",
+      "severity": "Ernstig",
+      "description": "Fysieke agressie tijdens ADL verzorging. Cliënt sloeg verzorgende in gezicht. Verzorgende heeft blauw oog. Incident gemeld bij leidinggevende. Zorg uitgesteld, later met 2 personen uitgevoerd."
+    },
+    {
+      "client_id": "test-client-003",
+      "date": "2024-10-18",
+      "type": "Agressie",
+      "severity": "Ernstig",
+      "description": "Verbale agressie met schelden en dreigen. Gooide met voorwerpen naar personeel. Kamer verlaten, later teruggekomen met psychiater."
+    },
+    {
+      "client_id": "test-client-003",
+      "date": "2024-10-15",
+      "type": "Verzet zorg",
+      "severity": "Hoog",
+      "description": "Weigerde alle zorg. Schreeuwde en vloekte. Zorg kon niet worden uitgevoerd. Arts ingeschakeld voor medicatie-aanpassing."
+    },
+    {
+      "client_id": "test-client-003",
+      "date": "2024-10-10",
+      "type": "Agressie",
+      "severity": "Ernstig",
+      "description": "Duwde verzorgende weg met kracht. Verzorgende viel tegen muur. Blessure aan schouder. Arbo-arts geconsulteerd."
+    },
+    {
+      "client_id": "test-client-003",
+      "date": "2024-10-05",
+      "type": "Onrust",
+      "severity": "Hoog",
+      "description": "Extreme motorische onrust met ijsberen, schreeuwen. Kon niet worden gekalmeerd. PRN medicatie toegediend."
+    }
+  ],
+  "md_reviews": [
+    {
+      "client_id": "test-client-001",
+      "reviewer_name": "Dr. Maria Peters",
+      "reviewer_role": "specialist ouderengeneeskunde",
+      "clinical_notes": "Cliënte vertoont duidelijke progressie van dementie met toenemende ADL-afhankelijkheid en BPSD. MMSE gedaald van 18 naar 12 in 6 maanden. Katz-ADL score gedaald van 8 naar 2. Incident frequentie toegenomen met valrisico en dwaalgedrag. Nachtelijke zorg intensiever. Familie terecht bezorgd. Aanbeveling: herindicatie naar VV9 of hoger, uitbreiding zorguren, multidisciplinaire evaluatie, mogelijk gespecialiseerde dementiezorg overwegen.",
+      "decision": "approve",
+      "observation_period_days": null
+    },
+    {
+      "client_id": "test-client-001",
+      "reviewer_name": "Drs. Sophie van Leeuwen",
+      "reviewer_role": "psycholoog",
+      "clinical_notes": "BPSD symptomen toegenomen met NPI stijging van 18 naar 42. Vooral agitatie, angst en nachtelijk gedrag problematisch. Sundowing duidelijk aanwezig. Gedragsinterventies tot nu toe onvoldoende effectief. Medicatie-aanpassing door SOG heeft beperkt effect. Adviseer gestructureerde dagindeling, meer 1-op-1 begeleiding bij ADL, validatietechnieken, en mogelijk overplaatsing naar kleinschalig wonen met dementie-expertise.",
+      "decision": "approve",
+      "observation_period_days": null
+    },
+    {
+      "client_id": "test-client-001",
+      "reviewer_name": "Jan Vermeulen",
+      "reviewer_role": "fysiotherapeut",
+      "clinical_notes": "Mobiliteit achteruit gegaan. Balans en coördinatie verminderd. Valrisico significant toegenomen. Meerdere valincidenten laatste maanden. Loophulpmiddel geadviseerd maar naleving problematisch door cognitie. Transfers gaan met meer moeite. Adviseer aangepast loophulpmiddel, verhoogd toezicht bij mobiliteit, valpreventie protocol, en eventueel rolstoel voor langere afstanden.",
+      "decision": "approve",
+      "observation_period_days": null
+    },
+    {
+      "client_id": "test-client-002",
+      "reviewer_name": "Dr. Thomas de Jong",
+      "reviewer_role": "specialist ouderengeneeskunde",
+      "clinical_notes": "Cliënt functioneert stabiel op VV7 niveau. Kleine toename in zorgbehoefte maar binnen normale variatie. ADL scores stabiel. Geen significante gedragsproblematiek. Huidige indicatie blijft passend. Continueer huidige zorg, geen herindicatie noodzakelijk op dit moment.",
+      "decision": "observe",
+      "observation_period_days": 90
+    },
+    {
+      "client_id": "test-client-003",
+      "reviewer_name": "Dr. Robert van Dijk",
+      "reviewer_role": "psychiater",
+      "clinical_notes": "Ernstige BPSD met agressie, agitatie en psychotische symptomen. NPI score 72 (zeer hoog). Meerdere ernstige agressie-incidenten waarbij personeel letsel opliep. Huidige setting niet toereikend voor veiligheid cliënt en personeel. Medicamenteuze behandeling opgestart maar nog onvoldoende effectief. Dringend advies: overplaatsing naar gespecialiseerde BPSD unit met psychiatrische expertise, 1-op-1 zorg waar nodig, uitgebreid gedragsplan, en multidisciplinair team met psychiatrie.",
+      "decision": "approve",
+      "observation_period_days": null
+    },
+    {
+      "client_id": "test-client-003",
+      "reviewer_name": "Linda Bakker",
+      "reviewer_role": "gedragsdeskundige",
+      "clinical_notes": "Complexe gedragsproblematiek vereist specialistische aanpak. Huidige triggers geïdentificeerd: ADL momenten, nieuwe gezichten, drukke omgeving. Aanbevelingen: vaste kleine groep verzorgenden, rustige omgeving, aangepaste ADL benadering, medicatie-optimalisatie, en mogelijk opname in gespecialiseerde unit. Team ervaart hoge belasting. Huidige zorgintensiteit niet houdbaar zonder specialistische ondersteuning.",
+      "decision": "approve",
+      "observation_period_days": null
+    }
+  ]
+}
