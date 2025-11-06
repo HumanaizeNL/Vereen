@@ -9,6 +9,9 @@ import {
   Send,
   Loader2,
   AlertCircle,
+  Printer,
+  Download,
+  FileDown,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -24,6 +27,7 @@ import Link from 'next/link';
 import { MeerzorgForm } from '@/components/meerzorg/meerzorg-form';
 import { AnalysisResults } from '@/components/meerzorg/analysis-results';
 import { ValidationResults } from '@/components/meerzorg/validation-results';
+import { MigrationDialog } from '@/components/meerzorg/migration-dialog';
 
 interface Application {
   id: string;
@@ -155,6 +159,29 @@ export default function MeerzorgDetailPage() {
     }
   };
 
+  const handlePrint = () => {
+    window.open(`/meerzorg/${params.id}/print`, '_blank');
+  };
+
+  const handleExport = async (format: 'json' | 'csv') => {
+    try {
+      const response = await fetch(`/api/meerzorg/${params.id}/export?format=${format}`);
+      if (!response.ok) throw new Error('Export failed');
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `meerzorg-${params.id}-${Date.now()}.${format}`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (err) {
+      setError('Exporteren mislukt');
+    }
+  };
+
   if (loading) {
     return (
       <div className="container mx-auto py-8">
@@ -208,9 +235,45 @@ export default function MeerzorgDetailPage() {
               Meerzorg aanvraag • Versie {application.version}
             </p>
           </div>
-          <Badge variant={application.status === 'draft' ? 'secondary' : 'default'}>
-            {application.status}
-          </Badge>
+          <div className="flex items-center gap-2">
+            {application.version === '2025' && (
+              <MigrationDialog
+                applicationId={application.id}
+                currentVersion={application.version}
+                onMigrationComplete={fetchApplication}
+              />
+            )}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handlePrint}
+              className="gap-2"
+            >
+              <Printer className="h-4 w-4" />
+              Print
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleExport('json')}
+              className="gap-2"
+            >
+              <Download className="h-4 w-4" />
+              JSON
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleExport('csv')}
+              className="gap-2"
+            >
+              <FileDown className="h-4 w-4" />
+              CSV
+            </Button>
+            <Badge variant={application.status === 'draft' ? 'secondary' : 'default'}>
+              {application.status}
+            </Badge>
+          </div>
         </div>
       </div>
 

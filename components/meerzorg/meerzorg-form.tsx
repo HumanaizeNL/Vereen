@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Loader2, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -20,6 +20,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { EvidenceIndicator } from './evidence-indicator';
+
+interface Evidence {
+  id: string;
+  field_name: string;
+  source_type: string;
+  source_reference: string;
+  evidence_text: string;
+  confidence_score: number;
+  created_at: string;
+}
 
 interface MeerzorgFormProps {
   applicationId: string;
@@ -39,6 +50,38 @@ export function MeerzorgForm({
   const [formData, setFormData] = useState(initialFormData || {});
   const [saving, setSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
+  const [evidence, setEvidence] = useState<Evidence[]>([]);
+  const [evidenceByField, setEvidenceByField] = useState<Record<string, Evidence[]>>({});
+
+  useEffect(() => {
+    fetchEvidence();
+  }, [applicationId]);
+
+  const fetchEvidence = async () => {
+    try {
+      const response = await fetch(`/api/evidence?application_id=${applicationId}`);
+      if (!response.ok) throw new Error('Failed to fetch evidence');
+      const data = await response.json();
+      const evidenceData = data.evidence || [];
+      setEvidence(evidenceData);
+
+      // Group evidence by field_name
+      const grouped = evidenceData.reduce((acc: Record<string, Evidence[]>, item: Evidence) => {
+        if (!acc[item.field_name]) {
+          acc[item.field_name] = [];
+        }
+        acc[item.field_name].push(item);
+        return acc;
+      }, {});
+      setEvidenceByField(grouped);
+    } catch (error) {
+      console.error('Error fetching evidence:', error);
+    }
+  };
+
+  const getFieldEvidence = (fieldName: string) => {
+    return evidenceByField[fieldName] || [];
+  };
 
   const handleChange = (field: string, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -97,7 +140,13 @@ export function MeerzorgForm({
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="dagzorg_uren">Dagzorg uren</Label>
+              <div className="flex items-center gap-2">
+                <Label htmlFor="dagzorg_uren">Dagzorg uren</Label>
+                <EvidenceIndicator
+                  fieldName="dagzorg_uren"
+                  evidence={getFieldEvidence('dagzorg_uren')}
+                />
+              </div>
               <Input
                 id="dagzorg_uren"
                 type="number"
@@ -112,7 +161,13 @@ export function MeerzorgForm({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="nachtzorg_uren">Nachtzorg uren</Label>
+              <div className="flex items-center gap-2">
+                <Label htmlFor="nachtzorg_uren">Nachtzorg uren</Label>
+                <EvidenceIndicator
+                  fieldName="nachtzorg_uren"
+                  evidence={getFieldEvidence('nachtzorg_uren')}
+                />
+              </div>
               <Input
                 id="nachtzorg_uren"
                 type="number"
@@ -128,7 +183,13 @@ export function MeerzorgForm({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="een_op_een_uren">1-op-1 begeleiding uren</Label>
+            <div className="flex items-center gap-2">
+              <Label htmlFor="een_op_een_uren">1-op-1 begeleiding uren</Label>
+              <EvidenceIndicator
+                fieldName="een_op_een_uren"
+                evidence={getFieldEvidence('een_op_een_uren')}
+              />
+            </div>
             <Input
               id="een_op_een_uren"
               type="number"
@@ -154,7 +215,13 @@ export function MeerzorgForm({
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="adl_score">ADL score</Label>
+              <div className="flex items-center gap-2">
+                <Label htmlFor="adl_score">ADL score</Label>
+                <EvidenceIndicator
+                  fieldName="adl_score"
+                  evidence={getFieldEvidence('adl_score')}
+                />
+              </div>
               <Input
                 id="adl_score"
                 type="number"
@@ -167,7 +234,13 @@ export function MeerzorgForm({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="adl_categorie">ADL categorie</Label>
+              <div className="flex items-center gap-2">
+                <Label htmlFor="adl_categorie">ADL categorie</Label>
+                <EvidenceIndicator
+                  fieldName="adl_categorie"
+                  evidence={getFieldEvidence('adl_categorie')}
+                />
+              </div>
               <Select
                 value={formData.adl_categorie || ''}
                 onValueChange={(value) => handleChange('adl_categorie', value)}
@@ -203,7 +276,13 @@ export function MeerzorgForm({
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="gedragsproblematiek">Gedragsproblematiek aanwezig?</Label>
+            <div className="flex items-center gap-2">
+              <Label htmlFor="gedragsproblematiek">Gedragsproblematiek aanwezig?</Label>
+              <EvidenceIndicator
+                fieldName="gedragsproblematiek"
+                evidence={getFieldEvidence('gedragsproblematiek')}
+              />
+            </div>
             <Select
               value={formData.gedragsproblematiek || ''}
               onValueChange={(value) => handleChange('gedragsproblematiek', value)}
@@ -222,7 +301,13 @@ export function MeerzorgForm({
           {formData.gedragsproblematiek === 'ja' && (
             <>
               <div className="space-y-2">
-                <Label htmlFor="gedragsproblematiek_ernst">Ernst</Label>
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="gedragsproblematiek_ernst">Ernst</Label>
+                  <EvidenceIndicator
+                    fieldName="gedragsproblematiek_ernst"
+                    evidence={getFieldEvidence('gedragsproblematiek_ernst')}
+                  />
+                </div>
                 <Select
                   value={formData.gedragsproblematiek_ernst || ''}
                   onValueChange={(value) =>
