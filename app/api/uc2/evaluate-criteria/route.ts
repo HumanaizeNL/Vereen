@@ -4,6 +4,7 @@ import { EvaluateCriteriaRequestSchema } from '@/lib/schemas/requests';
 import { VV8_CRITERIA_2026, evaluateCriterion } from '@/lib/ai/criteria';
 import { addAuditEvent } from '@/lib/data/stores';
 import { MOCK_MODE } from '@/lib/ai/client';
+import { indexClientData } from '@/lib/search/flexsearch';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60; // 60 seconds for AI processing
@@ -29,6 +30,11 @@ export async function POST(request: NextRequest) {
     }
 
     const { client_id, period, criteria_set, max_evidence } = validated.data;
+
+    // Initialize and index client data for search
+    console.log(`📚 Indexing client data for ${client_id}...`);
+    await indexClientData(client_id);
+    console.log(`✅ Client data indexed successfully`);
 
     // Get criteria definitions
     const criteria = VV8_CRITERIA_2026;

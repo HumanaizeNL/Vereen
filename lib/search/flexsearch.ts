@@ -54,6 +54,7 @@ export async function indexClientData(client_id: string): Promise<void> {
 
   // Index notes
   const notes = await getClientNotes(client_id);
+  console.log(`   📝 Indexing ${notes.length} notes...`);
   notes.forEach((note, idx) => {
     const doc: SearchDocument = {
       id: note.id,
@@ -71,6 +72,7 @@ export async function indexClientData(client_id: string): Promise<void> {
 
   // Index measures
   const measures = await getClientMeasures(client_id);
+  console.log(`   📊 Indexing ${measures.length} measures...`);
   measures.forEach((measure, idx) => {
     const text = `${measure.type}: ${measure.score}${
       measure.comment ? ' - ' + measure.comment : ''
@@ -89,6 +91,7 @@ export async function indexClientData(client_id: string): Promise<void> {
 
   // Index incidents
   const incidents = await getClientIncidents(client_id);
+  console.log(`   ⚠️  Indexing ${incidents.length} incidents...`);
   incidents.forEach((incident, idx) => {
     const text = `${incident.type} (${incident.severity}): ${incident.description}`;
     const doc: SearchDocument = {
@@ -102,6 +105,9 @@ export async function indexClientData(client_id: string): Promise<void> {
     docs.set(doc.id, doc);
     index.add(doc.id, text);
   });
+
+  const totalDocs = notes.length + measures.length + incidents.length;
+  console.log(`   ✅ Total ${totalDocs} documents indexed for client ${client_id}`);
 }
 
 export interface SearchFilters {

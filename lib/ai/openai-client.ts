@@ -6,6 +6,7 @@
 // 4. Visual Studio authentication
 
 import { getAzureOpenAIConfig, MOCK_MODE } from './client';
+import { getCachedContextChunks, getRelevantContext } from './context-extractor';
 
 let cachedClient: any = null;
 
@@ -112,18 +113,19 @@ export async function chatCompletion(params: {
 }
 
 /**
- * Evaluate a criterion using AI
+ * Evaluate a criterion using AI with WLZ context
  */
 export async function evaluateCriterionWithAI(params: {
   criterion: { id: string; label: string; description: string };
   evidence: Array<{ source: string; snippet: string; row?: number }>;
   clientContext?: string;
+  useContext?: boolean; // Enable/disable context retrieval
 }): Promise<{
   status: 'voldoet' | 'niet_voldoet' | 'toegenomen_behoefte' | 'verslechterd' | 'onvoldoende_bewijs';
   argument: string;
   confidence: number;
 }> {
-  const { criterion, evidence, clientContext } = params;
+  const { criterion, evidence, clientContext, useContext = true } = params;
 
   if (evidence.length === 0) {
     return {
@@ -133,10 +135,27 @@ export async function evaluateCriterionWithAI(params: {
     };
   }
 
+  // Get relevant context from WLZ documents if enabled
+  let contextSection = '';
+  if (useContext) {
+    try {
+      const chunks = await getCachedContextChunks();
+      const relevantContext = getRelevantContext(chunks, criterion, 3);
+      if (relevantContext) {
+        contextSection = `\n\n=== RELEVANTE WLZ CONTEXT ===\n${relevantContext}\n\n=== EINDE CONTEXT ===\n\n`;
+      }
+    } catch (error) {
+      console.error('Error loading context for evaluation:', error);
+      // Continue without context if it fails
+    }
+  }
+
   const systemPrompt = `Je bent een expert in WLZ (Wet langdurige zorg) indicatiestelling voor VV8 2026 profielen.
 Je taak is om criteria te evalueren op basis van beschikbare evidence uit zorgnota's, metingen en incidenten.
 
 Voor het criterium "${criterion.label}": ${criterion.description}
+${contextSection}
+Gebruik de bovenstaande WLZ context als referentie voor de beoordeling. De context bevat relevante beleidsregels, voorschriften en richtlijnen.
 
 Beoordeel op basis van de evidence of:
 - "voldoet": Cliënt voldoet aan huidige profiel, geen verandering nodig
@@ -148,7 +167,7 @@ Beoordeel op basis van de evidence of:
 Geef je antwoord in JSON formaat:
 {
   "status": "een van de bovenstaande statussen",
-  "argument": "beargumenteerde beoordeling in 2-3 zinnen",
+  "argument": "beargumenteerde beoordeling in 2-3 zinnen, verwijs naar relevante beleidsregels indien van toepassing",
   "confidence": getal tussen 0 en 1
 }`;
 
@@ -233,26 +252,50 @@ export async function generateReportSection(params: {
 }
 
 /**
- * Analyze client trends using AI
+ * Analyze client trends using AI with WLZ context
  */
 export async function analyzeClientTrendsWithAI(params: {
   clientName: string;
   notes: Array<{ date: string; section: string; text: string }>;
   measures: Array<{ date: string; type: string; score: string }>;
   incidents: Array<{ date: string; type: string; severity: string; description: string }>;
+  useContext?: boolean;
 }): Promise<{
   summary: string;
   trends: string[];
   recommendation: string;
   complexity: 'laag' | 'gemiddeld' | 'hoog' | 'zeer hoog';
 }> {
+  const { useContext = true } = params;
+
+  // Get general WLZ context for trend analysis
+  let contextSection = '';
+  if (useContext) {
+    try {
+      const chunks = await getCachedContextChunks();
+      // Get context related to assessment and trends
+      const relevantContext = getRelevantContext(
+        chunks,
+        { label: 'trend analyse zorgbehoefte', description: 'indicatiestelling herindicatie beoordeling' },
+        2
+      );
+      if (relevantContext) {
+        contextSection = `\n\nRELEVANTE WLZ RICHTLIJNEN:\n${relevantContext}\n\n`;
+      }
+    } catch (error) {
+      console.error('Error loading context for trend analysis:', error);
+    }
+  }
+
   const systemPrompt = `Je bent een expert in WLZ zorganalyse. Analyseer de trends in zorgbehoeften van een cliënt op basis van notities, metingen en incidenten.
+${contextSection}
+Gebruik de WLZ richtlijnen als referentiekader voor je analyse.
 
 Geef je analyse in JSON formaat:
 {
   "summary": "Korte samenvatting in 2-3 zinnen",
   "trends": ["trend 1", "trend 2", "trend 3"],
-  "recommendation": "Concreet advies voor het vervolg",
+  "recommendation": "Concreet advies voor het vervolg, gebaseerd op WLZ richtlijnen",
   "complexity": "laag|gemiddeld|hoog|zeer hoog"
 }`;
 

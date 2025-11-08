@@ -1,0 +1,9 @@
+{
+  "client_id": "INPUT-CASUS-A",
+  "period": {
+    "from": "2024-01-01",
+    "to": "2025-12-31"
+  },
+  "criteria_set": "herindicatie.vv8.2026",
+  "max_evidence": 5
+}

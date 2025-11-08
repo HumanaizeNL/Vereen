@@ -295,12 +295,22 @@ export async function getEvidenceByTarget(
 // ===============================================
 
 export async function addAuditEvent(event: AuditEvent): Promise<void> {
+  // Validate that clientId exists if provided
+  let validClientId: string | null = null;
+  if (event.client_id) {
+    const clientExists = await prisma.client.findUnique({
+      where: { id: event.client_id },
+      select: { id: true },
+    });
+    validClientId = clientExists ? event.client_id : null;
+  }
+
   await prisma.auditEvent.create({
     data: {
       id: event.id,
       ts: new Date(event.ts),
       actor: event.actor,
-      clientId: event.client_id || null,
+      clientId: validClientId,
       action: event.action,
       meta: JSON.stringify(event.meta),
     },
