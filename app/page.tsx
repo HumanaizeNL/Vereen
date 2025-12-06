@@ -13,6 +13,34 @@ export default function HomePage() {
           </p>
         </div>
 
+        {/* Featured: AI Onboarding Assistant */}
+        <Link href="/onboarding">
+          <div className="bg-gradient-to-r from-purple-50 to-indigo-50 p-6 rounded-lg shadow-md border-2 border-purple-300 hover:border-purple-500 transition-colors cursor-pointer mb-6">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-10 h-10 rounded-full bg-purple-600 flex items-center justify-center">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                </svg>
+              </div>
+              <h2 className="text-2xl font-semibold text-purple-900">
+                AI Onboarding Assistent →
+              </h2>
+            </div>
+            <p className="text-purple-700 mb-4">
+              Vind de juiste AI-oplossing voor uw organisatie. De digitale assistent helpt u
+              bij het in kaart brengen van uw vraagstuk en presenteert passende AI-oplossingen
+              uit het Algoritmeregister met een implementatieplan op basis van VNG governance.
+            </p>
+            <div className="flex items-center gap-4 text-sm">
+              <div className="text-purple-600 font-medium">
+                ✓ Nieuw - Start het gesprek
+              </div>
+              <span className="text-purple-500">|</span>
+              <span className="text-purple-500">Gebaseerd op algoritmes.overheid.nl</span>
+            </div>
+          </div>
+        </Link>
+
         <div className="grid md:grid-cols-2 gap-6">
           <Link href="/uc1">
             <div className="bg-green-50 p-6 rounded-lg shadow-md border-2 border-green-300 hover:border-green-500 transition-colors cursor-pointer">

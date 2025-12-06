@@ -274,6 +274,132 @@ model MdReview {
 }
 
 // ============================================================================
+// UC3 - AI Onboarding Assistant Tables
+// ============================================================================
+
+// AlgorithmeLibrary entity - Cache of algorithms from algoritmes.overheid.nl
+model AlgorithmeLibrary {
+  id              String   @id @default(cuid())
+  externalId      String?  @unique @map("external_id") // ID from algoritmes.overheid.nl
+  name            String
+  organization    String   // Organization that developed/uses the algorithm
+  description     String   // Full description
+  shortDescription String? @map("short_description") // Brief summary
+  domain          String   // zorg, onderwijs, veiligheid, etc.
+  category        String?  // Sub-category within domain
+  riskLevel       String   @map("risk_level") // hoog, beperkt, minimaal
+  aiActCategory   String?  @map("ai_act_category") // EU AI Act classification
+  status          String   @default("active") // active, deprecated, pilot
+  sourceUrl       String?  @map("source_url")
+  contactEmail    String?  @map("contact_email")
+  tags            String?  // JSON array of tags for matching
+  useCases        String?  @map("use_cases") // JSON array of use case descriptions
+  requirements    String?  // JSON object with technical requirements
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  onboardingSolutions OnboardingSolution[]
+
+  @@index([domain])
+  @@index([riskLevel])
+  @@index([organization])
+  @@map("algorithme_library")
+}
+
+// OnboardingSession entity - Chat sessions with users
+model OnboardingSession {
+  id              String    @id @default(cuid())
+  userId          String?   @map("user_id") // Optional user identifier
+  sessionStatus   String    @default("active") @map("session_status") // active, completed, abandoned
+  currentPhase    String    @default("problem_analysis") @map("current_phase") // problem_analysis, solutions, implementation
+  organizationType String?  @map("organization_type") // gemeente, zorginstelling, etc.
+  organizationName String?  @map("organization_name")
+  problemSummary  String?   @map("problem_summary") // AI-generated summary of the problem
+  selectedDomain  String?   @map("selected_domain")
+  dataAvailability String?  @map("data_availability") // JSON with data types available
+  priorities      String?   // JSON array of user priorities
+  constraints     String?   // JSON array of constraints
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  completedAt     DateTime? @map("completed_at")
+
+  // Relations
+  messages          OnboardingMessage[]
+  solutions         OnboardingSolution[]
+  implementationPlan ImplementationPlan?
+
+  @@index([sessionStatus])
+  @@index([currentPhase])
+  @@index([createdAt])
+  @@map("onboarding_sessions")
+}
+
+// OnboardingMessage entity - Messages within a session
+model OnboardingMessage {
+  id        String   @id @default(cuid())
+  sessionId String   @map("session_id")
+  role      String   // user, assistant, system
+  content   String   // Message content
+  messageType String @default("text") @map("message_type") // text, solution_list, implementation_plan, question
+  metadata  String?  // JSON with extra data (e.g., suggested options, extracted entities)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  session OnboardingSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@index([createdAt])
+  @@map("onboarding_messages")
+}
+
+// OnboardingSolution entity - Proposed solutions for a session
+model OnboardingSolution {
+  id           String   @id @default(cuid())
+  sessionId    String   @map("session_id")
+  algorithmId  String?  @map("algorithm_id") // Reference to AlgorithmeLibrary
+  rank         Int      // Order in the list (1 = best match)
+  matchScore   Float    @map("match_score") // 0.0 to 1.0
+  matchReason  String   @map("match_reason") // AI explanation of why this matches
+  isSelected   Boolean  @default(false) @map("is_selected")
+  selectedAt   DateTime? @map("selected_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  // Relations
+  session   OnboardingSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  algorithm AlgorithmeLibrary? @relation(fields: [algorithmId], references: [id])
+
+  @@index([sessionId])
+  @@index([algorithmId])
+  @@index([isSelected])
+  @@map("onboarding_solutions")
+}
+
+// ImplementationPlan entity - Generated implementation plans
+model ImplementationPlan {
+  id                String   @id @default(cuid())
+  sessionId         String   @unique @map("session_id")
+  planVersion       Int      @default(1) @map("plan_version")
+  executiveSummary  String   @map("executive_summary")
+  stepsJson         String   @map("steps_json") // JSON array of implementation steps
+  rolesRequired     String   @map("roles_required") // JSON array of required roles
+  complianceChecklist String @map("compliance_checklist") // JSON array of compliance items
+  riskAssessment    String?  @map("risk_assessment") // JSON with risks and mitigations
+  estimatedDuration String?  @map("estimated_duration") // e.g., "3-6 months"
+  budgetIndication  String?  @map("budget_indication") // e.g., "€10k-€50k"
+  governanceModel   String?  @map("governance_model") // VNG governance alignment
+  nextSteps         String?  @map("next_steps") // JSON array of immediate actions
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  session OnboardingSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@map("implementation_plans")
+}
+
+// ============================================================================
 // Shared Infrastructure Tables
 // ============================================================================
 
